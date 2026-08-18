@@ -2,6 +2,7 @@
 Add-Type -AssemblyName System.Drawing
 
 $out = Join-Path $PSScriptRoot "public"
+$out = Join-Path (Split-Path $PSScriptRoot -Parent) "public"
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 
 $accent = [System.Drawing.Color]::FromArgb(62, 90, 128)   # #1D2EA0
