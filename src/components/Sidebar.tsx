@@ -95,13 +95,13 @@ export default function Sidebar() {
   const isFoldersTabActive = activeCategory === 'folders' || activeCategory.startsWith('folder:');
 
   return (
-    <div className="w-[52px] md:w-[56px] h-full shrink-0 bg-[#F4F3EE] dark:bg-[#101114] border-e border-[#E5E4DF] dark:border-[#20222B] flex flex-col items-center py-4 justify-between select-none z-20">
+    <div className="w-[52px] md:w-[56px] h-full shrink-0 bg-[#E8E9EE] dark:bg-[#222328] border-e border-[#D1D4DC] dark:border-[#2E3039] flex flex-col items-center py-4 justify-between select-none z-20">
       
       {/* Top Action Slots */}
       <div className="flex flex-col gap-5 items-center w-full">
         {/* Logo Icon */}
         <div 
-          className="p-2 text-[#3E5A80] dark:text-[#5A89C7] hover:scale-105 transition-transform"
+          className="p-2 text-[#1D2EA0] dark:text-[#A3B5F5] hover:scale-105 transition-transform"
           title="Markdown Notes"
         >
           <PenTool className="w-5 h-5" />
@@ -112,7 +112,7 @@ export default function Sidebar() {
           type="button"
           id="btn-rail-new-note"
           onClick={handleCreateNote}
-          className="w-8 h-8 rounded-md bg-[#3E5A80] hover:bg-[#324B6B] dark:bg-[#5A89C7] dark:hover:bg-[#4873AA] text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm"
+          className="w-8 h-8 rounded-md bg-[#1D2EA0] hover:bg-[#18298B] dark:bg-[#A3B5F5] dark:hover:bg-[#94A5F0] text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm"
           title="Create New Note (Ctrl+N)"
         >
           <Plus className="w-4 h-4" />
@@ -142,7 +142,7 @@ export default function Sidebar() {
           }}
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeCategory === 'all' && activeNoteId !== 'settings'
-              ? 'bg-[#E5E4DF] dark:bg-[#1E2127] text-stone-900 dark:text-stone-100 font-semibold' 
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
               : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="All Documents"
         >
@@ -159,7 +159,7 @@ export default function Sidebar() {
           }}
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${isFoldersTabActive && activeNoteId !== 'settings'
-              ? 'bg-[#E5E4DF] dark:bg-[#1E2127] text-stone-900 dark:text-stone-100 font-semibold' 
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
               : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Folder Explorer"
         >
@@ -176,7 +176,7 @@ export default function Sidebar() {
           }}
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeCategory === 'favorites' && activeNoteId !== 'settings'
-              ? 'bg-[#E5E4DF] dark:bg-[#1E2127] text-stone-900 dark:text-stone-100 font-semibold' 
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
               : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Favorites"
         >
@@ -193,7 +193,7 @@ export default function Sidebar() {
           }}
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeCategory === 'archive' && activeNoteId !== 'settings'
-              ? 'bg-[#E5E4DF] dark:bg-[#1E2127] text-stone-900 dark:text-stone-100 font-semibold' 
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
               : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Archived Documents"
         >
@@ -210,7 +210,7 @@ export default function Sidebar() {
           }}
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeCategory === 'trash' && activeNoteId !== 'settings'
-              ? 'bg-[#E5E4DF] dark:bg-[#1E2127] text-stone-900 dark:text-stone-100 font-semibold' 
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
               : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Trash Bin"
         >
@@ -246,7 +246,7 @@ export default function Sidebar() {
           }}
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeNoteId === 'settings' 
-              ? 'bg-[#E5E4DF] dark:bg-[#1E2127] text-stone-900 dark:text-stone-100' 
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100' 
               : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Settings / Preferences"
         >
@@ -272,7 +272,7 @@ export default function Sidebar() {
               autoFocus
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0D0E11] text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-[#3E5A80] transition-all text-sm"
+              className="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#111214] text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all text-sm"
               placeholder="Untitled Folder"
             />
           </div>
@@ -289,7 +289,7 @@ export default function Sidebar() {
             <button
               type="submit"
               id="btn-rail-folder-modal-submit"
-              className="px-4 py-1.5 rounded text-xs font-semibold text-white bg-[#3E5A80] hover:bg-[#324B6B] transition-all cursor-pointer"
+              className="px-4 py-1.5 rounded text-xs font-semibold text-white bg-[#1D2EA0] hover:bg-[#18298B] transition-all cursor-pointer"
             >
               Create
             </button>

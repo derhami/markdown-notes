@@ -174,11 +174,11 @@ export default function PersonalDashboard() {
   const activeFoldersCount = new Set(visibleNotes.map(n => n.folderId).filter(Boolean)).size;
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-[#FAF9F6] dark:bg-[#0D0E11] px-6 py-12 md:px-16 lg:px-24 flex flex-col justify-start select-none animate-fade-in transition-colors duration-200">
+    <div className="flex-1 h-full overflow-y-auto bg-[#F2F3F8] dark:bg-[#111214] px-6 py-12 md:px-16 lg:px-24 flex flex-col justify-start select-none animate-fade-in transition-colors duration-200">
       <div className="max-w-[840px] w-full mx-auto flex flex-col gap-10">
         
         {/* Header Greeting Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200/40 dark:border-[#20222B] pb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200/40 dark:border-[#2E3039] pb-6">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-[0.2em] block leading-none">
               {getGreeting()}, writer
@@ -189,7 +189,7 @@ export default function PersonalDashboard() {
           </div>
           
           {/* Subtle Security Status Indicator */}
-          <div className="flex items-center gap-2 text-xs font-semibold self-start md:self-center px-3 py-1.5 rounded-sm border border-stone-200/60 dark:border-[#20222B] bg-white dark:bg-[#141519] text-stone-500 dark:text-stone-400">
+          <div className="flex items-center gap-2 text-xs font-semibold self-start md:self-center px-3 py-1.5 rounded-sm border border-stone-200/60 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] text-stone-500 dark:text-stone-400">
             {vaultPasswordExists ? (
               isLocked ? (
                 <>
@@ -226,11 +226,11 @@ export default function PersonalDashboard() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => handleCreateNote(false)}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#3E5A80] dark:bg-[#5A89C7] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer rounded-sm"
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#1D2EA0] dark:bg-[#A3B5F5] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer rounded-sm"
               >
                 New Note
               </button>
-              <label className="px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-[#20222B] hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors cursor-pointer rounded-sm">
+              <label className="px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-[#2E3039] hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors cursor-pointer rounded-sm">
                 Import Markdown
                 <input
                   type="file"
@@ -269,10 +269,10 @@ export default function PersonalDashboard() {
                       <button
                         type="button"
                         onClick={() => setActiveNoteId(continueNote.id)}
-                        className="group flex flex-col gap-2 w-full text-left py-4 px-5 rounded-sm border border-stone-200/55 dark:border-[#20222B] bg-white dark:bg-[#141519] hover:border-[#3E5A80] dark:hover:border-[#5A89C7] transition-all cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.01)] dark:shadow-none"
+                        className="group flex flex-col gap-2 w-full text-left py-4 px-5 rounded-sm border border-stone-200/55 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] hover:border-[#1D2EA0] dark:hover:border-[#A3B5F5] transition-all cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.01)] dark:shadow-none"
                       >
                         <div className="flex items-center justify-between w-full">
-                          <span className="text-lg font-serif font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#3E5A80] dark:group-hover:text-[#5A89C7] transition-colors line-clamp-1">
+                          <span className="text-lg font-serif font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#1D2EA0] dark:group-hover:text-[#A3B5F5] transition-colors line-clamp-1">
                             {disp.title}
                           </span>
                           {continueNote.isPinned && <Pin className="w-3.5 h-3.5 text-stone-400" />}
@@ -280,7 +280,7 @@ export default function PersonalDashboard() {
                         <p className="text-xs text-stone-400 dark:text-stone-500 line-clamp-2 leading-relaxed">
                           {disp.content ? disp.content.substring(0, 150).replace(/[#*`_~]/g, '') : 'No additional content...'}
                         </p>
-                        <div className="text-[11px] text-stone-400 dark:text-stone-500 font-medium flex items-center gap-2 mt-1 border-t border-stone-100 dark:border-[#20222B]/40 pt-2.5 w-full">
+                        <div className="text-[11px] text-stone-400 dark:text-stone-500 font-medium flex items-center gap-2 mt-1 border-t border-stone-100 dark:border-[#2E3039]/40 pt-2.5 w-full">
                           <Calendar className="w-3 h-3 text-stone-400" />
                           <span>Edited {new Date(continueNote.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                           <span>·</span>
@@ -298,7 +298,7 @@ export default function PersonalDashboard() {
                   <h3 className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest leading-none">
                     Recently Edited
                   </h3>
-                  <div className="flex flex-col border border-stone-200/50 dark:border-[#20222B] rounded-sm divide-y divide-stone-200/30 dark:divide-[#20222B]/50 bg-white dark:bg-[#141519]">
+                  <div className="flex flex-col border border-stone-200/50 dark:border-[#2E3039] rounded-sm divide-y divide-stone-200/30 dark:divide-[#2E3039]/50 bg-white dark:bg-[#1A1B1E]">
                     {recentNotes.map((note) => {
                       const disp = getNoteDisplay(note);
                       const noteFolder = folders.find(f => f.id === note.folderId);
@@ -310,7 +310,7 @@ export default function PersonalDashboard() {
                           className="flex items-center justify-between w-full py-3 px-4 hover:bg-stone-50 dark:hover:bg-stone-900/40 text-stone-600 dark:text-stone-300 transition-colors cursor-pointer text-left"
                         >
                           <div className="flex flex-col gap-0.5 max-w-[70%]">
-                            <span className="font-serif font-medium text-stone-800 dark:text-stone-200 truncate group-hover:text-[#3E5A80] text-sm">
+                            <span className="font-serif font-medium text-stone-800 dark:text-stone-200 truncate group-hover:text-[#1D2EA0] text-sm">
                               {disp.title}
                             </span>
                             <div className="flex items-center gap-1.5 text-[10px] text-stone-400 dark:text-stone-500 font-medium">
@@ -340,25 +340,25 @@ export default function PersonalDashboard() {
                 <h3 className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest leading-none">
                   Writing Activity
                 </h3>
-                <div className="grid grid-cols-3 gap-4 border border-stone-200/50 dark:border-[#20222B] p-4 rounded-sm bg-white dark:bg-[#141519]">
+                <div className="grid grid-cols-3 gap-4 border border-stone-200/50 dark:border-[#2E3039] p-4 rounded-sm bg-white dark:bg-[#1A1B1E]">
                   <div className="flex flex-col">
-                    <span className="text-xl font-serif text-[#3E5A80] dark:text-[#5A89C7] font-medium leading-tight">
+                    <span className="text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
                       {totalNotesCount}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">
                       Active Notes
                     </span>
                   </div>
-                  <div className="flex flex-col border-s border-stone-200/50 dark:border-[#20222B] ps-4">
-                    <span className="text-xl font-serif text-[#3E5A80] dark:text-[#5A89C7] font-medium leading-tight">
+                  <div className="flex flex-col border-s border-stone-200/50 dark:border-[#2E3039] ps-4">
+                    <span className="text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
                       {totalWords.toLocaleString()}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">
                       Words Written
                     </span>
                   </div>
-                  <div className="flex flex-col border-s border-stone-200/50 dark:border-[#20222B] ps-4">
-                    <span className="text-xl font-serif text-[#3E5A80] dark:text-[#5A89C7] font-medium leading-tight">
+                  <div className="flex flex-col border-s border-stone-200/50 dark:border-[#2E3039] ps-4">
+                    <span className="text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
                       {activeFoldersCount}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">
@@ -378,7 +378,7 @@ export default function PersonalDashboard() {
                 <h3 className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest leading-none">
                   Quick Actions
                 </h3>
-                <div className="flex flex-col border border-stone-200/55 dark:border-[#20222B] rounded-sm bg-white dark:bg-[#141519] divide-y divide-stone-100 dark:divide-[#20222B]/50 overflow-hidden">
+                <div className="flex flex-col border border-stone-200/55 dark:border-[#2E3039] rounded-sm bg-white dark:bg-[#1A1B1E] divide-y divide-stone-100 dark:divide-[#2E3039]/50 overflow-hidden">
                   <button
                     onClick={() => handleCreateNote(false)}
                     className="flex items-center gap-3 w-full py-3 px-4 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-900/40 transition-colors text-left cursor-pointer"
@@ -417,7 +417,7 @@ export default function PersonalDashboard() {
                 <h3 className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest leading-none">
                   Secure Vault
                 </h3>
-                <div className="border border-stone-200/55 dark:border-[#20222B] rounded-sm p-4 bg-white dark:bg-[#141519] flex flex-col gap-3.5 shadow-sm">
+                <div className="border border-stone-200/55 dark:border-[#2E3039] rounded-sm p-4 bg-white dark:bg-[#1A1B1E] flex flex-col gap-3.5 shadow-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
                       {secureNotesCount} Protected {secureNotesCount === 1 ? 'Note' : 'Notes'}
@@ -438,7 +438,7 @@ export default function PersonalDashboard() {
                       </p>
                       <button
                         onClick={() => setActiveNoteId('settings')}
-                        className="w-full py-2 bg-[#3E5A80] dark:bg-[#5A89C7] text-white font-bold text-xs rounded-sm hover:opacity-90 transition-all cursor-pointer text-center"
+                        className="w-full py-2 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white font-bold text-xs rounded-sm hover:opacity-90 transition-all cursor-pointer text-center"
                       >
                         Set Vault Password
                       </button>
@@ -454,15 +454,15 @@ export default function PersonalDashboard() {
                           placeholder="Vault Password"
                           value={passwordInput}
                           onChange={(e) => setPasswordInput(e.target.value)}
-                          className={`w-full py-2 px-3 border rounded-sm text-xs bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-800 dark:text-stone-100 outline-none transition-colors
-                            ${unlockError ? 'border-red-400 dark:border-red-500' : 'border-stone-200 dark:border-[#20222B] focus:border-[#3E5A80] dark:focus:border-[#5A89C7]'}`}
+                          className={`w-full py-2 px-3 border rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none transition-colors
+                            ${unlockError ? 'border-red-400 dark:border-red-500' : 'border-stone-200 dark:border-[#2E3039] focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]'}`}
                           disabled={isSubmitting}
                         />
                       </div>
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-2 bg-[#3E5A80] dark:bg-[#5A89C7] text-white font-bold text-xs rounded-sm hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer text-center disabled:opacity-50"
+                        className="w-full py-2 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white font-bold text-xs rounded-sm hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer text-center disabled:opacity-50"
                       >
                         {isSubmitting ? 'Decrypting...' : 'Unlock Vault'}
                       </button>
@@ -479,7 +479,7 @@ export default function PersonalDashboard() {
                             setActiveNoteId(null);
                             showToast('Browse all notes. Secure notes are now decrypted and fully visible.', 'info');
                           }}
-                          className="flex-1 py-2 border border-[#3E5A80] dark:border-[#5A89C7] text-[#3E5A80] dark:text-[#5A89C7] font-semibold text-xs rounded-sm hover:bg-stone-50 dark:hover:bg-stone-900/50 transition-colors cursor-pointer text-center"
+                          className="flex-1 py-2 border border-[#1D2EA0] dark:border-[#A3B5F5] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold text-xs rounded-sm hover:bg-stone-50 dark:hover:bg-stone-900/50 transition-colors cursor-pointer text-center"
                         >
                           Open Secure Notes
                         </button>
@@ -501,7 +501,7 @@ export default function PersonalDashboard() {
                   <h3 className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest leading-none">
                     Pinned Notes
                   </h3>
-                  <div className="flex flex-col border border-stone-200/55 dark:border-[#20222B] rounded-sm bg-white dark:bg-[#141519] divide-y divide-stone-100 dark:divide-[#20222B]/40 overflow-hidden">
+                  <div className="flex flex-col border border-stone-200/55 dark:border-[#2E3039] rounded-sm bg-white dark:bg-[#1A1B1E] divide-y divide-stone-100 dark:divide-[#2E3039]/40 overflow-hidden">
                     {pinnedNotes.map((note) => {
                       const disp = getNoteDisplay(note);
                       return (
@@ -524,7 +524,7 @@ export default function PersonalDashboard() {
                   <h3 className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest leading-none">
                     Favorites
                   </h3>
-                  <div className="flex flex-col border border-stone-200/55 dark:border-[#20222B] rounded-sm bg-white dark:bg-[#141519] divide-y divide-stone-100 dark:divide-[#20222B]/40 overflow-hidden">
+                  <div className="flex flex-col border border-stone-200/55 dark:border-[#2E3039] rounded-sm bg-white dark:bg-[#1A1B1E] divide-y divide-stone-100 dark:divide-[#2E3039]/40 overflow-hidden">
                     {favoriteNotes.map((note) => {
                       const disp = getNoteDisplay(note);
                       return (

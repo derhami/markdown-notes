@@ -244,10 +244,10 @@ export default function NoteList() {
   const showFoldersTree = activeCategory === 'folders' || activeCategory.startsWith('folder:');
 
   return (
-    <div className="w-full h-full bg-white dark:bg-[#141519] flex flex-col overflow-hidden select-none">
+    <div className="w-full h-full bg-white dark:bg-[#1A1B1E] flex flex-col overflow-hidden select-none">
       
       {/* Search Header */}
-      <div className="p-4 flex flex-col gap-3 shrink-0 border-b border-stone-100 dark:border-[#20222B]">
+      <div className="p-4 flex flex-col gap-3 shrink-0 border-b border-stone-100 dark:border-[#2E3039]">
         {/* Sleek Search bar */}
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
@@ -257,7 +257,7 @@ export default function NoteList() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search notes... (Ctrl+K)"
-            className="w-full py-1.5 pl-9 pr-3 bg-stone-50 dark:bg-[#0D0E11] border border-[#E5E4DF] dark:border-[#20222B] rounded text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[#3E5A80] transition-all"
+            className="w-full py-1.5 pl-9 pr-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all"
           />
         </div>
 
@@ -305,7 +305,7 @@ export default function NoteList() {
         
         {/* Folders Explorer (Visible in Folders view) */}
         {showFoldersTree && (
-          <div className="px-3 pt-3 border-b border-stone-100 dark:border-[#1E2127]/60 pb-3 flex flex-col gap-2">
+          <div className="px-3 pt-3 border-b border-stone-100 dark:border-[#2E3039]/60 pb-3 flex flex-col gap-2">
             <div className="flex items-center justify-between px-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
               <span>Directory Tree</span>
               <button
@@ -366,11 +366,11 @@ export default function NoteList() {
                   key={note.id}
                   id={`browser-note-${note.id}`}
                   onClick={() => setActiveNoteId(note.id)}
-                  className={`group relative flex flex-col gap-1 py-3 px-4 border-b border-stone-100/40 dark:border-[#1E2127]/30 transition-all cursor-pointer select-none
+                  className={`group relative flex flex-col gap-1 py-3 px-4 border-b border-stone-100/40 dark:border-[#2E3039]/30 transition-all cursor-pointer select-none
                     ${isTitleRtl ? 'text-right' : 'text-left'}
                     ${isSelected 
-                      ? 'bg-[#FAF9F6] dark:bg-[#1C1D24]' 
-                      : 'hover:bg-stone-50/50 dark:hover:bg-[#1E2127]/20'}`}
+                      ? 'bg-[#F2F3F8] dark:bg-[#222328]' 
+                      : 'hover:bg-stone-50/50 dark:hover:bg-[#2E3039]/20'}`}
                 >
                   {/* Note Row Heading */}
                   <div className="flex items-start justify-between gap-2">
@@ -400,7 +400,7 @@ export default function NoteList() {
                             id={`btn-browse-pin-${note.id}`}
                             onClick={(e) => handleTogglePin(e, note)}
                             className={`p-0.5 rounded hover:bg-stone-250 dark:hover:bg-stone-750 transition-colors cursor-pointer
-                              ${note.isPinned ? 'text-[#3E5A80] dark:text-[#5A89C7]' : 'text-stone-300 dark:text-stone-700'}`}
+                              ${note.isPinned ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-300 dark:text-stone-700'}`}
                           >
                             <Pin className="w-3 h-3 fill-current" />
                           </button>
@@ -463,7 +463,7 @@ export default function NoteList() {
               autoFocus
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0D0E11] text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-[#3E5A80] text-sm"
+              className="w-full px-3 py-2 rounded border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#111214] text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] text-sm"
               placeholder="e.g. My Projects"
             />
           </div>
@@ -479,7 +479,7 @@ export default function NoteList() {
             <button
               type="submit"
               id="btn-notelist-folder-submit"
-              className="px-4 py-1.5 rounded text-xs text-white bg-[#3E5A80] hover:bg-[#324B6B]"
+              className="px-4 py-1.5 rounded text-xs text-white bg-[#1D2EA0] hover:bg-[#18298B]"
             >
               Save
             </button>

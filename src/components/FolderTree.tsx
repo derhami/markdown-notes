@@ -47,7 +47,7 @@ function FolderNode({
         onClick={() => onSelect(folder.id)}
         className={`group flex items-center justify-between py-1 px-2 rounded transition-colors cursor-pointer hover:bg-stone-100 dark:hover:bg-stone-800/60
           ${isSelected 
-            ? 'bg-[#F4F3EF] dark:bg-[#1C1D24] text-stone-900 dark:text-stone-100 font-medium' 
+            ? 'bg-[#E8E9EE] dark:bg-[#222328] text-stone-900 dark:text-stone-100 font-medium' 
             : 'text-stone-600 dark:text-stone-400'}`}
         style={{
           paddingInlineStart: `${Math.max(8, level * 12)}px`
@@ -65,7 +65,7 @@ function FolderNode({
             {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
           </button>
           
-          <FolderIcon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-[#3E5A80] dark:text-[#5A89C7]' : 'text-stone-400'}`} />
+          <FolderIcon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400'}`} />
           <span className="truncate text-xs font-medium tracking-tight">{folder.name}</span>
         </div>
 

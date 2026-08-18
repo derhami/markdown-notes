@@ -62,24 +62,24 @@ We define the local database structure inside `src/db/database.ts`:
 ---
 
 ## 3. Design Tokens & Visual Hierarchy
-* **Color System**:
+* **Color System** (Derhami Lab Design System — harmonized with derhami/nounproject.ir and sister apps):
   * **Light Theme**:
-    * Background: `#FAF9F6` (Elegant Warm White / Alabaster)
+    * Background: `#F2F3F8` (cool signature lab gray)
     * Surface: `#FFFFFF`
-    * Elevated Surface: `#F4F3EF`
-    * Border: `#E5E4DF`
-    * Primary Accent: `#3E5A80` (Muted Slate Blue)
+    * Elevated Surface: `#E8E9EE`
+    * Border: `#D1D4DC`
+    * Primary Accent: `#1D2EA0` (Derhami brand indigo)
   * **Dark Theme**:
-    * Background: `#0D0E11` (Sophisticated deep space charcoal)
-    * Surface: `#141519`
-    * Elevated Surface: `#1C1D24`
-    * Border: `#20222B`
-    * Primary Accent: `#5A89C7` (Muted Steel Blue)
+    * Background: `#111214`
+    * Surface: `#1A1B1E`
+    * Elevated Surface: `#222328`
+    * Border: `#2E3039`
+    * Primary Accent: `#A3B5F5` (periwinkle brand accent)
 * **Geometry**:
-  * Crisp, sharp corners for all interactive states and modal containers. Avoid extreme rounded cards (maximum boundary `rounded` i.e. 4px-6px).
+  * Crisp, sharp corners for all interactive states and modal containers (`rounded-sm` / `rounded` 4-6px). Avoid extreme rounded cards.
 * **Typography**:
-  * Headings: Elegant serif typography (Lora / Playfair Display) for an editorial feel.
-  * Body & UI Font: System-wide clean sans-serif (Inter/system-ui).
+  * Headings: Elegant serif typography (Lora) for an editorial feel — English UI only.
+  * Body & UI Font: `IRANYekanX` (lab standard) with `Vazirmatn` fallback for Persian strings, then system sans.
   * Line height: UI is `1.4` - `1.5`, Editor is customizable (default `1.6` - `1.7`) for maximum readability.
   * Markdown Reading Width: Constrained to `max-w-[720px]` in editor and preview modes for optimal reading lines.
 

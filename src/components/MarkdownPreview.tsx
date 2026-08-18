@@ -128,7 +128,7 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
           <input
             type="checkbox"
             checked={props.checked}
-            className="w-4 h-4 rounded text-[#3E5A80] focus:ring-[#3E5A80] border-stone-300 dark:border-stone-800 bg-white dark:bg-[#141519] cursor-pointer transition-colors shrink-0 mt-1"
+            className="w-4 h-4 rounded text-[#1D2EA0] focus:ring-[#1D2EA0] border-stone-300 dark:border-stone-800 bg-white dark:bg-[#1A1B1E] cursor-pointer transition-colors shrink-0 mt-1"
             onChange={(e) => {
               const taskCheckboxes = document.querySelectorAll('.markdown-body input[type="checkbox"]');
               const idx = Array.from(taskCheckboxes).indexOf(e.target as HTMLInputElement);
@@ -147,7 +147,7 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
       return (
         <h1 
           id={id} 
-          className={blockClass(children, "text-2xl font-bold text-stone-900 dark:text-stone-100 border-b border-stone-100 dark:border-[#20222B] pb-2 mt-8 mb-4 leading-snug")}
+          className={blockClass(children, "text-2xl font-bold text-stone-900 dark:text-stone-100 border-b border-stone-100 dark:border-[#2E3039] pb-2 mt-8 mb-4 leading-snug")}
         >
           {children}
         </h1>
@@ -193,7 +193,7 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
         const lang = match ? match[1] : '';
 
         return (
-          <div className="relative group/code my-4 rounded border border-stone-250/50 dark:border-stone-850 overflow-hidden bg-[#FAF9F6]/40 dark:bg-[#101114]/20 text-xs select-text">
+          <div className="relative group/code my-4 rounded border border-stone-250/50 dark:border-stone-850 overflow-hidden bg-[#F2F3F8]/40 dark:bg-[#222328]/20 text-xs select-text">
             {lang && (
               <span className="absolute top-2.5 left-3.5 text-[9px] font-mono uppercase tracking-widest text-stone-400 dark:text-stone-500 select-none pointer-events-none opacity-60">
                 {lang}
@@ -208,14 +208,14 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
       }
 
       return (
-        <pre className="p-4 rounded my-4 overflow-x-auto bg-[#FAF9F6]/40 dark:bg-[#101114]/20 border border-stone-250/50 dark:border-stone-850 text-left [direction:ltr] select-text font-mono text-xs">
+        <pre className="p-4 rounded my-4 overflow-x-auto bg-[#F2F3F8]/40 dark:bg-[#222328]/20 border border-stone-250/50 dark:border-stone-850 text-left [direction:ltr] select-text font-mono text-xs">
           {children}
         </pre>
       );
     },
     code: ({ node, inline, className, children, ...props }: any) => {
       return (
-        <code className="px-1 py-0.5 rounded bg-stone-100/60 dark:bg-[#1C1D24] border border-stone-200/50 dark:border-stone-800 text-stone-700 dark:text-stone-300 font-mono text-[11px]" {...props}>
+        <code className="px-1 py-0.5 rounded bg-stone-100/60 dark:bg-[#222328] border border-stone-200/50 dark:border-stone-800 text-stone-700 dark:text-stone-300 font-mono text-[11px]" {...props}>
           {children}
         </code>
       );
@@ -244,17 +244,17 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
       );
     },
     thead: ({ children }: any) => (
-      <thead className="border-t border-b-2 border-stone-200 dark:border-[#20222B] font-semibold bg-transparent text-stone-800 dark:text-stone-200">
+      <thead className="border-t border-b-2 border-stone-200 dark:border-[#2E3039] font-semibold bg-transparent text-stone-800 dark:text-stone-200">
         {children}
       </thead>
     ),
     tbody: ({ children }: any) => (
-      <tbody className="divide-y divide-stone-100/30 dark:divide-stone-900/10 border-b border-stone-200 dark:border-[#20222B]">
+      <tbody className="divide-y divide-stone-100/30 dark:divide-stone-900/10 border-b border-stone-200 dark:border-[#2E3039]">
         {children}
       </tbody>
     ),
     tr: ({ children }: any) => (
-      <tr className="even:bg-stone-100/30 dark:even:bg-[#1C1D24]/30 hover:bg-stone-100/50 dark:hover:bg-stone-850/20 transition-colors">
+      <tr className="even:bg-stone-100/30 dark:even:bg-[#222328]/30 hover:bg-stone-100/50 dark:hover:bg-stone-850/20 transition-colors">
         {children}
       </tr>
     ),

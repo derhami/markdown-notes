@@ -505,7 +505,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
 
   if (!note) {
     return (
-      <div className="flex-1 h-full bg-[#FAF9F6] dark:bg-[#0D0E11] flex flex-col items-center justify-center text-stone-400">
+      <div className="flex-1 h-full bg-[#F2F3F8] dark:bg-[#111214] flex flex-col items-center justify-center text-stone-400">
         <p className="animate-pulse text-[10px] tracking-widest font-bold uppercase">LOADING DOCUMENT...</p>
       </div>
     );
@@ -514,9 +514,9 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
   // Secure locked document guard
   if (note.isEncrypted && isLocked) {
     return (
-      <div className="flex-1 h-full flex flex-col items-center justify-center bg-[#FAF9F6] dark:bg-[#0D0E11] px-6 select-none animate-fade-in">
-        <div className="max-w-xs w-full flex flex-col items-center text-center gap-4 py-8 px-6 bg-white dark:bg-[#141519] border border-stone-200/65 dark:border-[#20222B] shadow-sm rounded-sm">
-          <div className="p-3 bg-stone-50 dark:bg-[#1C1D24] border border-stone-150 dark:border-[#20222B] text-amber-500 rounded-sm">
+      <div className="flex-1 h-full flex flex-col items-center justify-center bg-[#F2F3F8] dark:bg-[#111214] px-6 select-none animate-fade-in">
+        <div className="max-w-xs w-full flex flex-col items-center text-center gap-4 py-8 px-6 bg-white dark:bg-[#1A1B1E] border border-stone-200/65 dark:border-[#2E3039] shadow-sm rounded-sm">
+          <div className="p-3 bg-stone-50 dark:bg-[#222328] border border-stone-150 dark:border-[#2E3039] text-amber-500 rounded-sm">
             <Lock className="w-5 h-5 animate-pulse" />
           </div>
           <div>
@@ -542,12 +542,12 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               type="password"
               name="vault_editor_pass"
               placeholder="Vault Password"
-              className="w-full py-2 px-3 border border-stone-200 dark:border-[#20222B] bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-850 dark:text-stone-100 rounded-sm text-xs outline-none focus:border-[#3E5A80] dark:focus:border-[#5A89C7]"
+              className="w-full py-2 px-3 border border-stone-200 dark:border-[#2E3039] bg-[#F2F3F8] dark:bg-[#111214] text-stone-850 dark:text-stone-100 rounded-sm text-xs outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
               autoFocus
             />
             <button
               type="submit"
-              className="w-full py-2 bg-[#3E5A80] dark:bg-[#5A89C7] text-white font-bold text-xs rounded-sm hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer text-center"
+              className="w-full py-2 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white font-bold text-xs rounded-sm hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer text-center"
             >
               Decrypt & Edit
             </button>
@@ -590,13 +590,13 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
 
   return (
     <div 
-      className={`flex-1 h-full flex flex-col overflow-hidden bg-[#FAF9F6] dark:bg-[#0D0E11] transition-all relative
+      className={`flex-1 h-full flex flex-col overflow-hidden bg-[#F2F3F8] dark:bg-[#111214] transition-all relative
         ${zenMode ? 'z-40 fixed inset-0' : ''}`}
     >
       
       {/* Editor Control bar (Chrome Header) - Fades gracefully on active writing */}
       <div 
-        className={`px-4 md:px-6 py-2 border-b border-stone-200/50 dark:border-[#20222B] bg-[#FAF9F6]/90 dark:bg-[#0D0E11]/90 backdrop-blur-md flex items-center justify-between shrink-0 select-none z-30 transition-opacity duration-700
+        className={`px-4 md:px-6 py-2 border-b border-stone-200/50 dark:border-[#2E3039] bg-[#F2F3F8]/90 dark:bg-[#111214]/90 backdrop-blur-md flex items-center justify-between shrink-0 select-none z-30 transition-opacity duration-700
           ${isTyping ? 'opacity-10 pointer-events-none hover:opacity-100' : 'opacity-100'}`}
       >
         <div className="flex items-center gap-1.5">
@@ -659,7 +659,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             onClick={() => setShowToolbar(!showToolbar)}
             title="Toggle Markdown Toolbar (Ctrl+/)"
             className={`p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-850/60 transition-colors cursor-pointer
-              ${showToolbar ? 'text-[#3E5A80] dark:text-[#5A89C7]' : ''}`}
+              ${showToolbar ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : ''}`}
           >
             <Sparkles className="w-4 h-4" />
           </button>
@@ -705,7 +705,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Focus Mode"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${focusMode 
-                  ? 'text-[#3E5A80] dark:text-[#5A89C7] bg-[#F4F3EF] dark:bg-stone-850' 
+                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-850' 
                   : 'text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400'}`}
             >
               <CloudLightning className="w-4 h-4" />
@@ -721,7 +721,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Zen Mode (ESC to exit)"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${zenMode 
-                  ? 'text-[#3E5A80] dark:text-[#5A89C7] bg-[#F4F3EF] dark:bg-stone-850' 
+                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-850' 
                   : 'text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400'}`}
             >
               {zenMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -737,7 +737,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Outline & Metadata Panel"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${tocOpen 
-                  ? 'text-[#3E5A80] dark:text-[#5A89C7] bg-[#F4F3EF] dark:bg-stone-850' 
+                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-850' 
                   : 'text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400'}`}
             >
               <BookOpen className="w-4 h-4" />
@@ -757,14 +757,14 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               className="p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-850/60 transition-colors cursor-pointer"
             >
               {isPreviewOnly ? (
-                <Edit3 className="w-4.5 h-4.5 text-[#3E5A80] dark:text-[#5A89C7]" />
+                <Edit3 className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
               ) : (
-                <Eye className="w-4.5 h-4.5 text-[#3E5A80] dark:text-[#5A89C7]" />
+                <Eye className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
               )}
             </button>
           ) : (
             <>
-              <span className="w-px h-4 bg-stone-200 dark:bg-[#20222B] mx-1" />
+              <span className="w-px h-4 bg-stone-200 dark:bg-[#2E3039] mx-1" />
               
               {/* Layout Mode selectors */}
               <div className="flex items-center bg-stone-150/60 dark:bg-stone-900 p-0.5 rounded-sm">
@@ -773,7 +773,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                   id="btn-layout-editor-only"
                   onClick={() => updateSettings({ editorMode: 'editor' })}
                   className={`p-1 rounded-sm text-xs cursor-pointer transition-colors
-                    ${isEditorOnly ? 'bg-white dark:bg-[#141519] text-[#3E5A80] dark:text-[#5A89C7] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                    ${isEditorOnly ? 'bg-white dark:bg-[#1A1B1E] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
                   title="Editor View"
                 >
                   <EyeOff className="w-3.5 h-3.5" />
@@ -783,7 +783,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                   id="btn-layout-split"
                   onClick={() => updateSettings({ editorMode: 'split' })}
                   className={`p-1 rounded-sm text-xs cursor-pointer transition-colors
-                    ${isSplitMode ? 'bg-white dark:bg-[#141519] text-[#3E5A80] dark:text-[#5A89C7] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                    ${isSplitMode ? 'bg-white dark:bg-[#1A1B1E] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
                   title="Split View"
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -793,7 +793,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                   id="btn-layout-preview-only"
                   onClick={() => updateSettings({ editorMode: 'preview' })}
                   className={`p-1 rounded-sm text-xs cursor-pointer transition-colors
-                    ${isPreviewOnly ? 'bg-white dark:bg-[#141519] text-[#3E5A80] dark:text-[#5A89C7] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                    ${isPreviewOnly ? 'bg-white dark:bg-[#1A1B1E] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
                   title="Reader View"
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -802,7 +802,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             </>
           )}
 
-          <span className="w-px h-4 bg-stone-200 dark:bg-[#20222B] mx-0.5" />
+          <span className="w-px h-4 bg-stone-200 dark:bg-[#2E3039] mx-0.5" />
 
           {/* More Actions Trigger Button */}
           <button
@@ -822,7 +822,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
 
       {/* Optional Formatting Toolbar (Hidden by default, clean!) */}
       {showToolbar && !isPreviewOnly && (
-        <div className="px-6 py-1.5 bg-[#FAF9F6] dark:bg-[#0D0E11] border-b border-stone-200/50 dark:border-[#20222B] overflow-x-auto flex items-center gap-1 shrink-0 z-20 no-scrollbar">
+        <div className="px-6 py-1.5 bg-[#F2F3F8] dark:bg-[#111214] border-b border-stone-200/50 dark:border-[#2E3039] overflow-x-auto flex items-center gap-1 shrink-0 z-20 no-scrollbar">
           {toolbarButtons.map((btn) => (
             <button
               type="button"
@@ -850,14 +850,14 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
           <div className="flex-1 h-full relative flex flex-col overflow-hidden max-w-full">
             <div className={`flex-1 ${
               isSplitMode 
-                ? 'overflow-hidden bg-white dark:bg-[#141519]' 
-                : `${isMobile ? 'p-0 bg-white dark:bg-[#141519]' : 'py-6 px-4 md:px-6 lg:px-8 bg-[#FAF9F6] dark:bg-[#0D0E11] flex justify-center'} overflow-y-auto overflow-x-hidden`
+                ? 'overflow-hidden bg-white dark:bg-[#1A1B1E]' 
+                : `${isMobile ? 'p-0 bg-white dark:bg-[#1A1B1E]' : 'py-6 px-4 md:px-6 lg:px-8 bg-[#F2F3F8] dark:bg-[#111214] flex justify-center'} overflow-y-auto overflow-x-hidden`
             } transition-colors duration-200 scrollbar-thin`}>
               {/* The beautiful floating writing sheet */}
               <div className={`w-full flex flex-col ${
                 isSplitMode 
-                  ? 'h-full p-6 md:p-10 border-e border-stone-200/50 dark:border-[#20222B] overflow-hidden' 
-                  : `${isMobile ? 'p-5 bg-white dark:bg-[#141519] min-h-full border-none rounded-none shadow-none' : `bg-white dark:bg-[#141519] border border-[#E5E4DF] dark:border-[#20222B] shadow-[0_2px_15px_rgba(0,0,0,0.015)] rounded-sm p-8 md:p-14 min-h-full ${getWidthClass(settings.editorWidth)}`}`
+                  ? 'h-full p-6 md:p-10 border-e border-stone-200/50 dark:border-[#2E3039] overflow-hidden' 
+                  : `${isMobile ? 'p-5 bg-white dark:bg-[#1A1B1E] min-h-full border-none rounded-none shadow-none' : `bg-white dark:bg-[#1A1B1E] border border-[#D1D4DC] dark:border-[#2E3039] shadow-[0_2px_15px_rgba(0,0,0,0.015)] rounded-sm p-8 md:p-14 min-h-full ${getWidthClass(settings.editorWidth)}`}`
               }`}>
               
               {/* Note inline Title (sits naturally on the writing sheet) */}
@@ -914,19 +914,19 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
           </div>
           
           {/* Persistent, minimal document info summary in the bottom-right corner */}
-          <div className="absolute bottom-4 right-6 z-20 flex items-center gap-2.5 px-3 py-1.5 rounded-xs bg-[#FAF9F6]/90 dark:bg-[#0D0E11]/90 backdrop-blur-md border border-stone-250/50 dark:border-[#20222B] text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 select-none shadow-xs transition-all duration-300">
+          <div className="absolute bottom-4 right-6 z-20 flex items-center gap-2.5 px-3 py-1.5 rounded-xs bg-[#F2F3F8]/90 dark:bg-[#111214]/90 backdrop-blur-md border border-stone-250/50 dark:border-[#2E3039] text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 select-none shadow-xs transition-all duration-300">
             <span className="flex items-center gap-1">
-              <span className="text-[#3E5A80] dark:text-[#5A89C7] font-medium">Words:</span>
+              <span className="text-[#1D2EA0] dark:text-[#A3B5F5] font-medium">Words:</span>
               <span className="text-stone-800 dark:text-stone-200">{calculateWordCount(localContent)}</span>
             </span>
             <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700" />
             <span className="flex items-center gap-1">
-              <span className="text-[#3E5A80] dark:text-[#5A89C7] font-medium">Chars:</span>
+              <span className="text-[#1D2EA0] dark:text-[#A3B5F5] font-medium">Chars:</span>
               <span className="text-stone-800 dark:text-stone-200">{calculateCharacterCount(localContent)}</span>
             </span>
             <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700" />
             <span className="flex items-center gap-1">
-              <span className="text-[#3E5A80] dark:text-[#5A89C7] font-medium">Reading:</span>
+              <span className="text-[#1D2EA0] dark:text-[#A3B5F5] font-medium">Reading:</span>
               <span className="text-stone-800 dark:text-stone-200">{calculateReadingTime(localContent)}m</span>
             </span>
           </div>
@@ -937,14 +937,14 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
         {!isEditorOnly && (
           <div className={`flex-1 ${
             isSplitMode 
-              ? 'overflow-hidden bg-white dark:bg-[#141519]' 
-              : `${isMobile ? 'p-0 bg-white dark:bg-[#141519]' : 'py-6 px-4 md:px-6 lg:px-8 bg-[#FAF9F6] dark:bg-[#0D0E11] flex justify-center'} overflow-y-auto overflow-x-hidden`
+              ? 'overflow-hidden bg-white dark:bg-[#1A1B1E]' 
+              : `${isMobile ? 'p-0 bg-white dark:bg-[#1A1B1E]' : 'py-6 px-4 md:px-6 lg:px-8 bg-[#F2F3F8] dark:bg-[#111214] flex justify-center'} overflow-y-auto overflow-x-hidden`
           } transition-colors duration-200 select-text scrollbar-thin`}>
             {/* The beautiful floating reader sheet */}
             <div className={`w-full flex flex-col ${
               isSplitMode 
-                ? 'h-full p-6 md:p-10 border-e border-stone-200/50 dark:border-[#20222B] overflow-y-auto overflow-x-hidden scrollbar-thin' 
-                : `${isMobile ? 'p-5 bg-white dark:bg-[#141519] min-h-full border-none rounded-none shadow-none' : `bg-white dark:bg-[#141519] border border-[#E5E4DF] dark:border-[#20222B] shadow-[0_2px_15px_rgba(0,0,0,0.015)] rounded-sm p-8 md:p-14 min-h-full ${getWidthClass(settings.editorWidth)}`}`
+                ? 'h-full p-6 md:p-10 border-e border-stone-200/50 dark:border-[#2E3039] overflow-y-auto overflow-x-hidden scrollbar-thin' 
+                : `${isMobile ? 'p-5 bg-white dark:bg-[#1A1B1E] min-h-full border-none rounded-none shadow-none' : `bg-white dark:bg-[#1A1B1E] border border-[#D1D4DC] dark:border-[#2E3039] shadow-[0_2px_15px_rgba(0,0,0,0.015)] rounded-sm p-8 md:p-14 min-h-full ${getWidthClass(settings.editorWidth)}`}`
             }`}>
               {isPreviewOnly && (
                 <div className="mb-8 border-b border-stone-100/60 dark:border-stone-900/40 pb-4 select-none">
@@ -1035,15 +1035,15 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
 
         {/* Temporary right-side utility panel (Outline / Document Info) */}
         {tocOpen && !isMobile && (
-          <div className="w-[280px] h-full border-s border-stone-200/50 dark:border-[#20222B] bg-[#F4F3EF] dark:bg-[#101114] flex flex-col shrink-0 animate-fade-in relative z-20">
+          <div className="w-[280px] h-full border-s border-stone-200/50 dark:border-[#2E3039] bg-[#E8E9EE] dark:bg-[#222328] flex flex-col shrink-0 animate-fade-in relative z-20">
             {/* Header with quiet textual tabs */}
-            <div className="flex border-b border-stone-200/50 dark:border-[#20222B] px-2 pt-2">
+            <div className="flex border-b border-stone-200/50 dark:border-[#2E3039] px-2 pt-2">
               <button
                 type="button"
                 onClick={() => setRightPanelTab('outline')}
                 className={`flex-1 py-2 text-[10px] font-bold tracking-widest uppercase transition-colors cursor-pointer text-center
                   ${rightPanelTab === 'outline' 
-                    ? 'text-[#3E5A80] dark:text-[#5A89C7] border-b-2 border-[#3E5A80] dark:border-[#5A89C7]' 
+                    ? 'text-[#1D2EA0] dark:text-[#A3B5F5] border-b-2 border-[#1D2EA0] dark:border-[#A3B5F5]' 
                     : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
               >
                 Outline
@@ -1053,7 +1053,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                 onClick={() => setRightPanelTab('info')}
                 className={`flex-1 py-2 text-[10px] font-bold tracking-widest uppercase transition-colors cursor-pointer text-center
                   ${rightPanelTab === 'info' 
-                    ? 'text-[#3E5A80] dark:text-[#5A89C7] border-b-2 border-[#3E5A80] dark:border-[#5A89C7]' 
+                    ? 'text-[#1D2EA0] dark:text-[#A3B5F5] border-b-2 border-[#1D2EA0] dark:border-[#A3B5F5]' 
                     : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
               >
                 Metadata
@@ -1077,7 +1077,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                         key={i}
                         type="button"
                         onClick={() => scrollToHeading(h.id)}
-                        className={`w-full text-start py-1 px-2 text-xs rounded-sm hover:bg-stone-150/50 dark:hover:bg-stone-900 text-stone-600 dark:text-stone-400 hover:text-[#3E5A80] dark:hover:text-[#5A89C7] transition-colors truncate cursor-pointer
+                        className={`w-full text-start py-1 px-2 text-xs rounded-sm hover:bg-stone-150/50 dark:hover:bg-stone-900 text-stone-600 dark:text-stone-400 hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors truncate cursor-pointer
                           ${h.level === 1 ? 'font-semibold' : h.level === 2 ? 'ps-4 text-[11px]' : 'ps-8 text-[10px]'}`}
                       >
                         {h.text}
@@ -1154,7 +1154,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             </div>
 
             {/* Quick footer helper */}
-            <div className="p-3 border-t border-stone-200/50 dark:border-[#20222B] text-center">
+            <div className="p-3 border-t border-stone-200/50 dark:border-[#2E3039] text-center">
               <button
                 type="button"
                 onClick={() => setTocOpen(false)}
@@ -1176,7 +1176,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
         {/* Subtle Editorial Status Bar at the bottom right - gracefully fades out on typing */}
         {!isMobile && (
           <div 
-            className={`absolute bottom-4 right-4 z-30 flex items-center gap-2.5 px-3 py-1 bg-[#FAF9F6]/90 dark:bg-[#0D0E11]/90 backdrop-blur-md rounded-sm border border-stone-200/50 dark:border-stone-850/50 text-[9px] tracking-widest uppercase font-bold text-stone-400 dark:text-stone-500 select-none shadow-sm pointer-events-none transition-opacity duration-700
+            className={`absolute bottom-4 right-4 z-30 flex items-center gap-2.5 px-3 py-1 bg-[#F2F3F8]/90 dark:bg-[#111214]/90 backdrop-blur-md rounded-sm border border-stone-200/50 dark:border-stone-850/50 text-[9px] tracking-widest uppercase font-bold text-stone-400 dark:text-stone-500 select-none shadow-sm pointer-events-none transition-opacity duration-700
               ${isTyping ? 'opacity-10' : 'opacity-100'}`}
           >
             <span>{calculateWordCount(localContent)} words</span>
@@ -1220,7 +1220,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               type="button"
               id="btn-unsaved-save"
               onClick={() => confirmNavigation(true, triggerImmediateSave)}
-              className="px-4 py-1.5 rounded-sm font-bold uppercase tracking-widest text-white bg-[#3E5A80] hover:bg-[#324B6B] dark:bg-[#5A89C7] dark:hover:bg-[#4873AA] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] dark:bg-[#A3B5F5] dark:hover:bg-[#94A5F0] cursor-pointer"
             >
               Save Changes
             </button>

@@ -385,7 +385,7 @@ export default function SettingsPanel() {
   const renderAppearanceSection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#3E5A80] dark:text-[#5A89C7] uppercase tracking-wider">Appearance Settings</h3>
+        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Appearance Settings</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Control the theme and color styles of Markdown Notes</p>
       </div>
 
@@ -407,8 +407,8 @@ export default function SettingsPanel() {
               onClick={() => updateSettings({ theme: mode.id as any })}
               className={`px-3 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-all
                 ${settings.theme === mode.id 
-                  ? 'border-[#3E5A80] dark:border-[#5A89C7] bg-[#FAF9F6] dark:bg-[#1C1D24] text-[#3E5A80] dark:text-[#5A89C7] font-bold' 
-                  : 'border-stone-200 dark:border-[#20222B] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
+                  ? 'border-[#1D2EA0] dark:border-[#A3B5F5] bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] font-bold' 
+                  : 'border-stone-200 dark:border-[#2E3039] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
             >
               {mode.label}
             </button>
@@ -417,7 +417,7 @@ export default function SettingsPanel() {
       </div>
 
       {/* Interface Density comfortable / compact */}
-      <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#20222B] pt-5">
+      <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#2E3039] pt-5">
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">UI Density</label>
         <p className="text-[10px] text-stone-400 leading-normal font-semibold">Adjust vertical padding to show more or less workspace item list density.</p>
         
@@ -433,8 +433,8 @@ export default function SettingsPanel() {
               onClick={() => updateSettings({ uiDensity: d.id as any })}
               className={`px-3 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-all
                 ${settings.uiDensity === d.id 
-                  ? 'border-[#3E5A80] dark:border-[#5A89C7] bg-[#FAF9F6] dark:bg-[#1C1D24] text-[#3E5A80] dark:text-[#5A89C7] font-bold' 
-                  : 'border-stone-200 dark:border-[#20222B] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
+                  ? 'border-[#1D2EA0] dark:border-[#A3B5F5] bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] font-bold' 
+                  : 'border-stone-200 dark:border-[#2E3039] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
             >
               {d.label}
             </button>
@@ -447,7 +447,7 @@ export default function SettingsPanel() {
   const renderEditorSection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#3E5A80] dark:text-[#5A89C7] uppercase tracking-wider">Editor Settings</h3>
+        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Editor Settings</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Customize font and layouts of the Markdown text canvas</p>
       </div>
 
@@ -464,7 +464,7 @@ export default function SettingsPanel() {
           max="22"
           value={settings.editorFontSize}
           onChange={(e) => updateSettings({ editorFontSize: parseInt(e.target.value) })}
-          className="w-full h-1 bg-stone-200 dark:bg-[#20222B] rounded appearance-none cursor-pointer accent-[#3E5A80] dark:accent-[#5A89C7]"
+          className="w-full h-1 bg-stone-200 dark:bg-[#2E3039] rounded appearance-none cursor-pointer accent-[#1D2EA0] dark:accent-[#A3B5F5]"
         />
       </div>
 
@@ -482,8 +482,8 @@ export default function SettingsPanel() {
               onClick={() => updateSettings({ editorLineHeight: lh })}
               className={`px-3 py-1 rounded border text-xs font-medium cursor-pointer transition-all
                 ${settings.editorLineHeight === lh 
-                  ? 'border-[#3E5A80] dark:border-[#5A89C7] bg-[#FAF9F6] dark:bg-[#1C1D24] text-[#3E5A80] dark:text-[#5A89C7]' 
-                  : 'border-stone-200 dark:border-[#20222B] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
+                  ? 'border-[#1D2EA0] dark:border-[#A3B5F5] bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5]' 
+                  : 'border-stone-200 dark:border-[#2E3039] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
             >
               {lh}
             </button>
@@ -492,7 +492,7 @@ export default function SettingsPanel() {
       </div>
 
       {/* Word Wrap Toggle */}
-      <div className="flex items-center justify-between border-t border-stone-100 dark:border-[#20222B] pt-5 mt-2">
+      <div className="flex items-center justify-between border-t border-stone-100 dark:border-[#2E3039] pt-5 mt-2">
         <div className="flex flex-col gap-0.5">
           <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Word wrap</label>
           <p className="text-[10px] text-stone-400 leading-normal font-semibold">Wrap lines to prevent horizontal scroll bars.</p>
@@ -502,7 +502,7 @@ export default function SettingsPanel() {
           id="btn-editor-wrap-toggle"
           onClick={() => updateSettings({ editorWordWrap: !settings.editorWordWrap })}
           className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer
-            ${settings.editorWordWrap ? 'bg-[#3E5A80] dark:bg-[#5A89C7]' : 'bg-stone-200 dark:bg-[#1C1D24]'}`}
+            ${settings.editorWordWrap ? 'bg-[#1D2EA0] dark:bg-[#A3B5F5]' : 'bg-stone-200 dark:bg-[#222328]'}`}
         >
           <div 
             className={`w-4.5 h-4.5 rounded-full bg-white shadow-sm transform transition-transform duration-200
@@ -516,7 +516,7 @@ export default function SettingsPanel() {
   const renderStorageSection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#3E5A80] dark:text-[#5A89C7] uppercase tracking-wider">Storage & Local Files</h3>
+        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Storage & Local Files</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Inspect database, sync local directories, and run backup processes</p>
       </div>
 
@@ -532,9 +532,9 @@ export default function SettingsPanel() {
       </div>
 
       {/* File System Access API Area */}
-      <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#20222B] pt-4">
+      <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#2E3039] pt-4">
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
-          <Folder className="w-3.5 h-3.5 text-[#3E5A80] dark:text-[#5A89C7]" />
+          <Folder className="w-3.5 h-3.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
           <span>Local Directory Sync (File System Access)</span>
         </label>
         <p className="text-[10px] text-stone-400 leading-relaxed font-semibold">
@@ -547,7 +547,7 @@ export default function SettingsPanel() {
               <button
                 type="button"
                 onClick={handleSelectLocalFolder}
-                className="px-3.5 py-1.5 bg-[#3E5A80] text-white hover:bg-[#324B6B] dark:bg-[#5A89C7] text-xs font-bold rounded-sm cursor-pointer flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-1.5 bg-[#1D2EA0] text-white hover:bg-[#18298B] dark:bg-[#A3B5F5] text-xs font-bold rounded-sm cursor-pointer flex items-center gap-1.5 transition-colors"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Sync to Local Directory</span>
@@ -559,7 +559,7 @@ export default function SettingsPanel() {
               )}
             </div>
           ) : (
-            <div className="py-2 px-3 bg-stone-100 dark:bg-[#101114] border border-stone-200/50 dark:border-[#20222B] text-[10px] text-stone-400 dark:text-stone-500 font-semibold rounded-sm">
+            <div className="py-2 px-3 bg-stone-100 dark:bg-[#222328] border border-stone-200/50 dark:border-[#2E3039] text-[10px] text-stone-400 dark:text-stone-500 font-semibold rounded-sm">
               File System Access API is not supported by your browser sandbox. Use manual backups and individual downloads below.
             </div>
           )}
@@ -567,7 +567,7 @@ export default function SettingsPanel() {
       </div>
 
       {/* Individual note downloads */}
-      <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#20222B] pt-4">
+      <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#2E3039] pt-4">
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Download active documents</label>
         <p className="text-[10px] text-stone-400 leading-relaxed font-semibold">
           Trigger a browser file download sequence to download all un-archived documents as individual .md files.
@@ -575,7 +575,7 @@ export default function SettingsPanel() {
         <button
           type="button"
           onClick={handleDownloadMarkdownFiles}
-          className="px-3.5 py-1.5 border border-stone-200 dark:border-[#20222B] text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-900/30 text-xs font-bold rounded-sm cursor-pointer self-start flex items-center gap-1.5 mt-2 transition-colors"
+          className="px-3.5 py-1.5 border border-stone-200 dark:border-[#2E3039] text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-900/30 text-xs font-bold rounded-sm cursor-pointer self-start flex items-center gap-1.5 mt-2 transition-colors"
         >
           <FileText className="w-3.5 h-3.5" />
           <span>Download All (.md)</span>
@@ -583,13 +583,13 @@ export default function SettingsPanel() {
       </div>
 
       {/* Core metrics grid */}
-      <div className="grid grid-cols-3 gap-3 border-t border-stone-100 dark:border-[#20222B] pt-4">
+      <div className="grid grid-cols-3 gap-3 border-t border-stone-100 dark:border-[#2E3039] pt-4">
         {[
           { label: 'Documents', count: activeNotesCount },
           { label: 'Folders', count: folders.length },
           { label: 'Trash Notes', count: trashCount }
         ].map((stat) => (
-          <div key={stat.label} className="p-3 rounded-sm border border-stone-100 dark:border-[#20222B] bg-[#FAF9F6] dark:bg-[#101114] flex flex-col gap-0.5 text-center">
+          <div key={stat.label} className="p-3 rounded-sm border border-stone-100 dark:border-[#2E3039] bg-[#F2F3F8] dark:bg-[#222328] flex flex-col gap-0.5 text-center">
             <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">{stat.label}</span>
             <span className="text-sm font-serif font-bold text-stone-850 dark:text-stone-100 mt-0.5">{stat.count}</span>
           </div>
@@ -597,7 +597,7 @@ export default function SettingsPanel() {
       </div>
 
       {/* Export Backup Trigger */}
-      <div className="flex flex-col gap-2 mt-2 border-t border-stone-100 dark:border-[#20222B] pt-5">
+      <div className="flex flex-col gap-2 mt-2 border-t border-stone-100 dark:border-[#2E3039] pt-5">
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Backup Archive (.markdownnotes)</label>
         <p className="text-[10px] text-stone-400 leading-normal font-semibold">Download a complete, serialized JSON archive containing your database variables.</p>
         
@@ -608,7 +608,7 @@ export default function SettingsPanel() {
             onClick={() => setBackupIsEncrypted(true)}
             className={`px-2.5 py-1 text-[10px] font-bold rounded-sm border transition-all cursor-pointer
               ${backupIsEncrypted 
-                ? 'bg-stone-100 dark:bg-[#1C1D24] text-stone-850 dark:text-stone-100 border-stone-200 dark:border-[#20222B]' 
+                ? 'bg-stone-100 dark:bg-[#222328] text-stone-850 dark:text-stone-100 border-stone-200 dark:border-[#2E3039]' 
                 : 'text-stone-400 border-transparent'}`}
           >
             Encrypted Backup (Recommended)
@@ -618,7 +618,7 @@ export default function SettingsPanel() {
             onClick={() => setBackupIsEncrypted(false)}
             className={`px-2.5 py-1 text-[10px] font-bold rounded-sm border transition-all cursor-pointer
               ${!backupIsEncrypted 
-                ? 'bg-stone-100 dark:bg-[#1C1D24] text-stone-850 dark:text-stone-100 border-stone-200 dark:border-[#20222B]' 
+                ? 'bg-stone-100 dark:bg-[#222328] text-stone-850 dark:text-stone-100 border-stone-200 dark:border-[#2E3039]' 
                 : 'text-stone-400 border-transparent'}`}
           >
             Plaintext Export
@@ -630,13 +630,13 @@ export default function SettingsPanel() {
             type="button"
             id="btn-settings-export-backup"
             onClick={handleExportBackup}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold text-white bg-[#3E5A80] hover:bg-[#324B6B] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold text-white bg-[#1D2EA0] hover:bg-[#18298B] transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Archive</span>
           </button>
 
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold border border-stone-200 dark:border-[#20222B] bg-white dark:bg-[#141519] text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/30 transition-colors cursor-pointer">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold border border-stone-200 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/30 transition-colors cursor-pointer">
             <Upload className="w-3.5 h-3.5 text-stone-400" />
             <span>Select Backup to Restore</span>
             <input
@@ -652,10 +652,10 @@ export default function SettingsPanel() {
 
       {/* Restore Preview Block - PREVENT SILENT OVERWRITES */}
       {restorePreview && (
-        <div className="border border-[#3E5A80]/30 dark:border-[#5A89C7]/30 bg-[#3E5A80]/5 rounded-sm p-4 mt-2 flex flex-col gap-3.5">
+        <div className="border border-[#1D2EA0]/30 dark:border-[#A3B5F5]/30 bg-[#1D2EA0]/5 rounded-sm p-4 mt-2 flex flex-col gap-3.5">
           <div>
-            <h4 className="text-xs font-bold text-[#3E5A80] dark:text-[#5A89C7] flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-[#3E5A80] dark:text-[#5A89C7]" />
+            <h4 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
               <span>Restore Preview & Conflict Analysis</span>
             </h4>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 leading-relaxed font-semibold">
@@ -663,7 +663,7 @@ export default function SettingsPanel() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3.5 text-left bg-white dark:bg-[#141519] border border-stone-200/50 dark:border-[#20222B] p-3 rounded-sm">
+          <div className="grid grid-cols-2 gap-3.5 text-left bg-white dark:bg-[#1A1B1E] border border-stone-200/50 dark:border-[#2E3039] p-3 rounded-sm">
             <div className="flex flex-col text-xs">
               <span className="text-stone-400 font-bold uppercase text-[9px] tracking-wider">Total Notes</span>
               <span className="text-sm font-serif font-bold text-stone-800 dark:text-stone-100">{restorePreview.notesCount}</span>
@@ -696,7 +696,7 @@ export default function SettingsPanel() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleExecuteRestore}
-              className="py-2 px-3.5 bg-[#3E5A80] dark:bg-[#5A89C7] text-white text-xs font-bold rounded-sm cursor-pointer hover:opacity-90 transition-all"
+              className="py-2 px-3.5 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white text-xs font-bold rounded-sm cursor-pointer hover:opacity-90 transition-all"
             >
               Confirm & Execute Merge
             </button>
@@ -739,7 +739,7 @@ export default function SettingsPanel() {
               value={wipeConfirmText}
               onChange={(e) => setWipeConfirmText(e.target.value)}
               placeholder="Type 'WIPE' to confirm"
-              className="px-2.5 py-1 bg-white dark:bg-[#0D0E11] border border-stone-200 dark:border-[#20222B] text-xs rounded-sm focus:outline-none focus:ring-1 focus:ring-rose-500 text-stone-800 dark:text-stone-100"
+              className="px-2.5 py-1 bg-white dark:bg-[#111214] border border-stone-200 dark:border-[#2E3039] text-xs rounded-sm focus:outline-none focus:ring-1 focus:ring-rose-500 text-stone-800 dark:text-stone-100"
             />
             <button
               type="button"
@@ -770,16 +770,16 @@ export default function SettingsPanel() {
   const renderSecuritySection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#3E5A80] dark:text-[#5A89C7] uppercase tracking-wider">Security & Vault</h3>
+        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Security & Vault</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Manage client-side AES-256 encrypted storage, passwords, and recovery options</p>
       </div>
 
       {/* Password Setup Form */}
       {!vaultPasswordExists ? (
-        <form onSubmit={handleSetupVault} className="border border-stone-200/60 dark:border-[#20222B] p-4 rounded-sm flex flex-col gap-3 bg-white dark:bg-[#141519]">
+        <form onSubmit={handleSetupVault} className="border border-stone-200/60 dark:border-[#2E3039] p-4 rounded-sm flex flex-col gap-3 bg-white dark:bg-[#1A1B1E]">
           <div>
             <h4 className="text-xs font-bold text-stone-850 dark:text-stone-100 flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-[#3E5A80] dark:text-[#5A89C7]" />
+              <Shield className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
               <span>Initialize Secure Vault</span>
             </h4>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 leading-normal font-semibold">
@@ -795,7 +795,7 @@ export default function SettingsPanel() {
                 value={vaultPass}
                 onChange={(e) => setVaultPass(e.target.value)}
                 placeholder="Secure Password"
-                className="w-full py-1.5 px-3 border border-stone-250 dark:border-[#20222B] rounded-sm text-xs bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-800 dark:text-stone-100 outline-none focus:border-[#3E5A80] dark:focus:border-[#5A89C7]"
+                className="w-full py-1.5 px-3 border border-stone-250 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -805,7 +805,7 @@ export default function SettingsPanel() {
                 value={vaultPassConfirm}
                 onChange={(e) => setVaultPassConfirm(e.target.value)}
                 placeholder="Confirm Password"
-                className="w-full py-1.5 px-3 border border-stone-250 dark:border-[#20222B] rounded-sm text-xs bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-800 dark:text-stone-100 outline-none focus:border-[#3E5A80] dark:focus:border-[#5A89C7]"
+                className="w-full py-1.5 px-3 border border-stone-250 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
               />
             </div>
           </div>
@@ -819,25 +819,25 @@ export default function SettingsPanel() {
 
           <button
             type="submit"
-            className="py-2 px-3.5 bg-[#3E5A80] dark:bg-[#5A89C7] text-white text-xs font-bold rounded-sm cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all text-center self-start"
+            className="py-2 px-3.5 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white text-xs font-bold rounded-sm cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all text-center self-start"
           >
             Create Private Vault
           </button>
         </form>
       ) : (
-        <div className="flex flex-col gap-5 border border-stone-200/60 dark:border-[#20222B] p-4 rounded-sm bg-white dark:bg-[#141519]">
+        <div className="flex flex-col gap-5 border border-stone-200/60 dark:border-[#2E3039] p-4 rounded-sm bg-white dark:bg-[#1A1B1E]">
           
           {/* Status Indicator */}
-          <div className="flex items-center justify-between pb-3.5 border-b border-stone-100 dark:border-[#20222B]/50">
+          <div className="flex items-center justify-between pb-3.5 border-b border-stone-100 dark:border-[#2E3039]/50">
             <div className="flex items-center gap-2">
-              <Shield className="w-4.5 h-4.5 text-[#3E5A80] dark:text-[#5A89C7]" />
+              <Shield className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-stone-800 dark:text-stone-100">Private Cryptographic Vault</span>
                 <span className="text-[10px] text-stone-400 font-semibold">Encrypted with AES-256-GCM standards</span>
               </div>
             </div>
             
-            <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-sm bg-stone-50 dark:bg-[#0D0E11] text-[10px] font-bold border border-stone-150 dark:border-[#20222B]">
+            <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-sm bg-stone-50 dark:bg-[#111214] text-[10px] font-bold border border-stone-150 dark:border-[#2E3039]">
               {isLocked ? (
                 <>
                   <Lock className="w-3 h-3 text-amber-500" />
@@ -862,7 +862,7 @@ export default function SettingsPanel() {
                   placeholder="Vault Password"
                   value={unlockPass}
                   onChange={(e) => setUnlockPass(e.target.value)}
-                  className="flex-1 py-1.5 px-3 border border-stone-200 dark:border-[#20222B] rounded-sm text-xs bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-800 dark:text-stone-100 outline-none"
+                  className="flex-1 py-1.5 px-3 border border-stone-200 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none"
                 />
                 <button
                   onClick={async () => {
@@ -874,7 +874,7 @@ export default function SettingsPanel() {
                       showToast('Incorrect vault password', 'error');
                     }
                   }}
-                  className="py-1.5 px-4 bg-[#3E5A80] dark:bg-[#5A89C7] text-white font-bold text-xs rounded-sm cursor-pointer hover:opacity-90 transition-all"
+                  className="py-1.5 px-4 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white font-bold text-xs rounded-sm cursor-pointer hover:opacity-90 transition-all"
                 >
                   Unlock
                 </button>
@@ -891,7 +891,7 @@ export default function SettingsPanel() {
               </button>
             )}
           </div>          {/* Auto Lock Delay Selector */}
-          <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#20222B]/40 pt-4">
+          <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#2E3039]/40 pt-4">
             <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Auto-Lock Inactivity Delay</label>
             <p className="text-[10px] text-stone-400 leading-normal font-semibold">Automatically lock the vault after a specific period of user inactivity.</p>
             <div className="flex gap-1.5 mt-1 flex-wrap">
@@ -908,8 +908,8 @@ export default function SettingsPanel() {
                   onClick={() => setAutoLockDelay(delay.id as any)}
                   className={`px-2.5 py-1 text-[10px] font-bold border rounded-sm transition-all cursor-pointer
                     ${autoLockDelay === delay.id 
-                      ? 'border-[#3E5A80] dark:border-[#5A89C7] text-[#3E5A80] dark:text-[#5A89C7] bg-[#FAF9F6] dark:bg-[#1C1D24]' 
-                      : 'border-stone-200 dark:border-[#20222B] text-stone-400 dark:text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
+                      ? 'border-[#1D2EA0] dark:border-[#A3B5F5] text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#F2F3F8] dark:bg-[#222328]' 
+                      : 'border-stone-200 dark:border-[#2E3039] text-stone-400 dark:text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
                 >
                   {delay.label}
                 </button>
@@ -918,7 +918,7 @@ export default function SettingsPanel() {
           </div>
 
           {/* Hidden Notes Switcher */}
-          <div className="flex items-center justify-between border-t border-stone-100 dark:border-[#20222B]/40 pt-4">
+          <div className="flex items-center justify-between border-t border-stone-100 dark:border-[#2E3039]/40 pt-4">
             <div className="flex flex-col gap-0.5">
               <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Show Hidden Notes</label>
               <p className="text-[10px] text-stone-400 leading-normal font-semibold">Toggle the global visibility of documents flagged as Hidden.</p>
@@ -927,7 +927,7 @@ export default function SettingsPanel() {
               type="button"
               onClick={() => setShowHidden(!showHidden)}
               className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer
-                ${showHidden ? 'bg-[#3E5A80] dark:bg-[#5A89C7]' : 'bg-stone-200 dark:bg-stone-850'}`}
+                ${showHidden ? 'bg-[#1D2EA0] dark:bg-[#A3B5F5]' : 'bg-stone-200 dark:bg-stone-850'}`}
             >
               <div 
                 className={`w-4.5 h-4.5 rounded-full bg-white shadow-sm transform transition-transform duration-200
@@ -937,7 +937,7 @@ export default function SettingsPanel() {
           </div>
 
           {/* Change Password Panel */}
-          <div className="border-t border-stone-100 dark:border-[#20222B]/40 pt-4 flex flex-col gap-3">
+          <div className="border-t border-stone-100 dark:border-[#2E3039]/40 pt-4 flex flex-col gap-3">
             <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Change Vault Password</label>
             <form onSubmit={handleChangePassword} className="flex flex-col gap-2.5 max-w-sm">
               <input
@@ -945,25 +945,25 @@ export default function SettingsPanel() {
                 placeholder="Old Password"
                 value={oldPass}
                 onChange={(e) => setOldPass(e.target.value)}
-                className="w-full py-1.5 px-3 border border-stone-200 dark:border-[#20222B] rounded-sm text-xs bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-800 dark:text-stone-100 outline-none"
+                className="w-full py-1.5 px-3 border border-stone-200 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none"
               />
               <input
                 type="password"
                 placeholder="New Password"
                 value={newPass}
                 onChange={(e) => setNewPass(e.target.value)}
-                className="w-full py-1.5 px-3 border border-stone-200 dark:border-[#20222B] rounded-sm text-xs bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-800 dark:text-stone-100 outline-none"
+                className="w-full py-1.5 px-3 border border-stone-200 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none"
               />
               <input
                 type="password"
                 placeholder="Confirm New Password"
                 value={newPassConfirm}
                 onChange={(e) => setNewPassConfirm(e.target.value)}
-                className="w-full py-1.5 px-3 border border-stone-200 dark:border-[#20222B] rounded-sm text-xs bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-800 dark:text-stone-100 outline-none"
+                className="w-full py-1.5 px-3 border border-stone-200 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none"
               />
               <button
                 type="submit"
-                className="py-1.5 px-3 bg-stone-100 hover:bg-stone-200/55 dark:bg-[#0D0E11] dark:hover:bg-[#1D2028] border border-stone-200 dark:border-[#20222B] text-stone-700 dark:text-stone-300 text-xs font-bold rounded-sm cursor-pointer self-start transition-all"
+                className="py-1.5 px-3 bg-stone-100 hover:bg-stone-200/55 dark:bg-[#111214] dark:hover:bg-[#2A2B30] border border-stone-200 dark:border-[#2E3039] text-stone-700 dark:text-stone-300 text-xs font-bold rounded-sm cursor-pointer self-start transition-all"
               >
                 Update Password
               </button>
@@ -971,14 +971,14 @@ export default function SettingsPanel() {
           </div>
 
           {/* Recovery Key Panel */}
-          <div className="border-t border-stone-100 dark:border-[#20222B]/40 pt-4 flex flex-col gap-3">
+          <div className="border-t border-stone-100 dark:border-[#2E3039]/40 pt-4 flex flex-col gap-3">
             <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Emergency Recovery Key</label>
             <p className="text-[10px] text-stone-400 leading-normal font-semibold">Generate a highly cryptographically strong emergency key. If you forget your vault password, this key acts as a master decoder.</p>
             
             {recoveryKeyDisplay ? (
-              <div className="flex flex-col gap-2.5 p-3.5 bg-stone-50 dark:bg-[#0E1013] border border-stone-200 dark:border-[#20222B] rounded-sm">
+              <div className="flex flex-col gap-2.5 p-3.5 bg-stone-50 dark:bg-[#0E1013] border border-stone-200 dark:border-[#2E3039] rounded-sm">
                 <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-none">Your Recovery Key (Show Once):</span>
-                <span className="text-xs font-mono font-bold break-all select-all text-[#3E5A80] dark:text-[#5A89C7]">
+                <span className="text-xs font-mono font-bold break-all select-all text-[#1D2EA0] dark:text-[#A3B5F5]">
                   {recoveryKeyDisplay}
                 </span>
                 
@@ -996,7 +996,7 @@ export default function SettingsPanel() {
                   <span className="text-stone-300">|</span>
                   <button
                     onClick={handleDownloadRecoveryKey}
-                    className="flex items-center gap-1 text-[10px] font-bold text-stone-500 hover:text-[#3E5A80] dark:hover:text-[#5A89C7] transition-colors"
+                    className="flex items-center gap-1 text-[10px] font-bold text-stone-500 hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors"
                   >
                     <Download className="w-3 h-3" />
                     <span>Download TXT</span>
@@ -1007,7 +1007,7 @@ export default function SettingsPanel() {
               <button
                 type="button"
                 onClick={handleGenerateRecoveryKey}
-                className="py-1.5 px-3 bg-[#3E5A80] dark:bg-[#5A89C7] text-white text-xs font-bold rounded-sm cursor-pointer self-start transition-colors"
+                className="py-1.5 px-3 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white text-xs font-bold rounded-sm cursor-pointer self-start transition-colors"
               >
                 Generate Emergency Key
               </button>
@@ -1022,19 +1022,19 @@ export default function SettingsPanel() {
   const renderShortcutsSection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#3E5A80] dark:text-[#5A89C7] uppercase tracking-wider">Keyboard Shortcuts</h3>
+        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Keyboard Shortcuts</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Boost your productivity using keyboard commands</p>
       </div>
 
-      <div className="border border-stone-150 dark:border-[#20222B] rounded-sm overflow-hidden">
+      <div className="border border-stone-150 dark:border-[#2E3039] rounded-sm overflow-hidden">
         <table className="min-w-full border-collapse text-xs text-stone-700 dark:text-stone-300">
-          <thead className="bg-stone-50 dark:bg-stone-900 border-b border-stone-150 dark:border-[#20222B]">
+          <thead className="bg-stone-50 dark:bg-stone-900 border-b border-stone-150 dark:border-[#2E3039]">
             <tr>
               <th className="p-2.5 font-bold text-stone-800 dark:text-stone-200 text-left">Action</th>
               <th className="p-2.5 font-bold text-stone-800 dark:text-stone-200 text-right">Keybind</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100 dark:divide-[#20222B]/40">
+          <tbody className="divide-y divide-stone-100 dark:divide-[#2E3039]/40">
             {[
               { act: 'Create Document', key: 'Ctrl + N' },
               { act: 'Search / Command Menu', key: 'Ctrl + K' },
@@ -1060,9 +1060,9 @@ export default function SettingsPanel() {
 
   if (isMobile) {
     return (
-      <div className="flex-1 h-full flex flex-col overflow-hidden bg-white dark:bg-[#141519] select-none text-stone-800 dark:text-stone-200 animate-fade-in">
+      <div className="flex-1 h-full flex flex-col overflow-hidden bg-white dark:bg-[#1A1B1E] select-none text-stone-800 dark:text-stone-200 animate-fade-in">
         {/* Mobile Settings Header */}
-        <div className="px-5 py-4 border-b border-stone-100 dark:border-[#20222B] flex items-center justify-between shrink-0">
+        <div className="px-5 py-4 border-b border-stone-100 dark:border-[#2E3039] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             {mobileSection !== 'menu' && (
               <button 
@@ -1073,7 +1073,7 @@ export default function SettingsPanel() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <Settings className="w-4 h-4 text-[#3E5A80] dark:text-[#5A89C7]" />
+            <Settings className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
             <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
               {mobileSection === 'menu' ? 'Preferences' : 
                mobileSection === 'appearance' ? 'Appearance' :
@@ -1109,7 +1109,7 @@ export default function SettingsPanel() {
                     setActiveTab(tab.id as any);
                     setMobileSection(tab.id as any);
                   }}
-                  className="w-full h-12 px-3 rounded flex items-center justify-between hover:bg-stone-50 dark:hover:bg-stone-850/50 transition-colors cursor-pointer text-left text-stone-700 dark:text-stone-300 border-b border-stone-50 dark:border-[#20222B]/40"
+                  className="w-full h-12 px-3 rounded flex items-center justify-between hover:bg-stone-50 dark:hover:bg-stone-850/50 transition-colors cursor-pointer text-left text-stone-700 dark:text-stone-300 border-b border-stone-50 dark:border-[#2E3039]/40"
                 >
                   <div className="flex items-center gap-3">
                     <tab.icon className="w-4.5 h-4.5 text-stone-400" />
@@ -1136,12 +1136,12 @@ export default function SettingsPanel() {
   }
 
   return (
-    <div className="flex-1 h-full flex flex-col overflow-hidden bg-white dark:bg-[#141519] select-none text-stone-800 dark:text-stone-200 animate-fade-in">
+    <div className="flex-1 h-full flex flex-col overflow-hidden bg-white dark:bg-[#1A1B1E] select-none text-stone-800 dark:text-stone-200 animate-fade-in">
       
       {/* Settings Panel Header */}
-      <div className="px-6 py-4 border-b border-stone-100 dark:border-[#20222B] flex items-center justify-between shrink-0">
+      <div className="px-6 py-4 border-b border-stone-100 dark:border-[#2E3039] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <Settings className="w-4 h-4 text-[#3E5A80] dark:text-[#5A89C7]" />
+          <Settings className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
           <div>
             <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">Preferences</h2>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 font-semibold mt-0.5">Customize your writing space and secure vault</p>
@@ -1163,7 +1163,7 @@ export default function SettingsPanel() {
       <div className="flex-1 flex overflow-hidden">
         
         {/* Section Navigation Tabs List (Left Column) */}
-        <div className="w-48 bg-[#FAF9F6] dark:bg-[#0E1013] border-e border-stone-100 dark:border-[#20222B] p-4 flex flex-col gap-1 shrink-0">
+        <div className="w-48 bg-[#F2F3F8] dark:bg-[#0E1013] border-e border-stone-100 dark:border-[#2E3039] p-4 flex flex-col gap-1 shrink-0">
           {[
             { id: 'appearance', label: 'Appearance', icon: Settings },
             { id: 'editor', label: 'Editor Settings', icon: Keyboard },
@@ -1178,7 +1178,7 @@ export default function SettingsPanel() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`w-full py-1.5 px-2.5 rounded-sm text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors text-left
                 ${activeTab === tab.id 
-                  ? 'bg-[#E5E4DF] dark:bg-[#1C1D24] text-stone-950 dark:text-stone-100 font-bold shadow-sm' 
+                  ? 'bg-[#D1D4DC] dark:bg-[#222328] text-stone-950 dark:text-stone-100 font-bold shadow-sm' 
                   : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-850/30'}`}
             >
               <tab.icon className="w-3.5 h-3.5 shrink-0 text-stone-400" />
@@ -1188,7 +1188,7 @@ export default function SettingsPanel() {
         </div>
 
         {/* Properties Fields Pane (Right Column) */}
-        <div className="flex-1 overflow-y-auto p-8 bg-white dark:bg-[#141519]">
+        <div className="flex-1 overflow-y-auto p-8 bg-white dark:bg-[#1A1B1E]">
           <div className="max-w-md flex flex-col gap-8">
             {activeTab === 'appearance' && renderAppearanceSection()}
             {activeTab === 'editor' && renderEditorSection()}

@@ -195,7 +195,7 @@ export default function NoteActionManager() {
         await db.tags.add({
           id: generateId(),
           name: cleanTag,
-          color: '#3E5A80',
+          color: '#1D2EA0',
           createdAt: Date.now()
         });
       }
@@ -343,10 +343,10 @@ export default function NoteActionManager() {
           />
 
           {/* Action sheet card sliding up from bottom */}
-          <div className="relative w-full max-w-md bg-white dark:bg-[#141519] border-t border-[#E5E4DF] dark:border-[#20222B] rounded-t-lg shadow-2xl flex flex-col z-10 animate-slide-up">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#1A1B1E] border-t border-[#D1D4DC] dark:border-[#2E3039] rounded-t-lg shadow-2xl flex flex-col z-10 animate-slide-up">
             
             {/* Header / Info Handle */}
-            <div className="w-full flex flex-col items-center pt-2.5 pb-3 border-b border-stone-100 dark:border-[#20222B] shrink-0">
+            <div className="w-full flex flex-col items-center pt-2.5 pb-3 border-b border-stone-100 dark:border-[#2E3039] shrink-0">
               <div className="w-10 h-1 bg-stone-200 dark:bg-stone-800 rounded-full mb-2.5 shrink-0" />
               <div className="px-6 text-center max-w-xs">
                 <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 font-serif truncate">
@@ -359,13 +359,13 @@ export default function NoteActionManager() {
             </div>
 
             {/* Compact Grid of Quick Status Toggles (Pin, Favorite, Archive, Trash) */}
-            <div className="grid grid-cols-4 gap-1.5 px-4 py-2 bg-stone-50/50 dark:bg-[#1C1D24]/40 border-b border-stone-100 dark:border-[#20222B] shrink-0 text-[10px] font-bold">
+            <div className="grid grid-cols-4 gap-1.5 px-4 py-2 bg-stone-50/50 dark:bg-[#222328]/40 border-b border-stone-100 dark:border-[#2E3039] shrink-0 text-[10px] font-bold">
               <button
                 type="button"
                 onClick={handleTogglePin}
                 className={`flex flex-col items-center justify-center gap-1 py-1.5 rounded transition-all cursor-pointer ${
                   note.isPinned 
-                    ? 'bg-[#3E5A80]/10 dark:bg-[#5A89C7]/10 text-[#3E5A80] dark:text-[#5A89C7]' 
+                    ? 'bg-[#1D2EA0]/10 dark:bg-[#A3B5F5]/10 text-[#1D2EA0] dark:text-[#A3B5F5]' 
                     : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100/50 dark:hover:bg-stone-850/50'
                 }`}
               >
@@ -419,7 +419,7 @@ export default function NoteActionManager() {
                     setActiveNoteId(note.id);
                     closeAll();
                   }}
-                  className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#1E2127]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#2E3039]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
                 >
                   <FileText className="w-4 h-4 text-stone-400 shrink-0" />
                   <span>Open & Edit Note</span>
@@ -432,7 +432,7 @@ export default function NoteActionManager() {
                   closeAll();
                   setOpenRenameModal(true);
                 }}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#1E2127]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
+                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#2E3039]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
               >
                 <Edit3 className="w-4 h-4 text-stone-400 shrink-0" />
                 <span>Rename Document</span>
@@ -444,7 +444,7 @@ export default function NoteActionManager() {
                   closeAll();
                   setOpenMoveModal(true);
                 }}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#1E2127]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
+                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#2E3039]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
               >
                 <Folder className="w-4 h-4 text-stone-400 shrink-0" />
                 <span>Move to Folder...</span>
@@ -456,7 +456,7 @@ export default function NoteActionManager() {
                   closeAll();
                   setOpenTagsModal(true);
                 }}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#1E2127]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
+                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#2E3039]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
               >
                 <Tag className="w-4 h-4 text-stone-400 shrink-0" />
                 <span>Manage Tags...</span>
@@ -465,7 +465,7 @@ export default function NoteActionManager() {
               <button
                 type="button"
                 onClick={handleDuplicate}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#1E2127]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
+                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#2E3039]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
               >
                 <Copy className="w-4 h-4 text-stone-400 shrink-0" />
                 <span>Duplicate Document</span>
@@ -477,7 +477,7 @@ export default function NoteActionManager() {
                   closeAll();
                   setOpenSaveAsModal(true);
                 }}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#1E2127]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
+                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#2E3039]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
               >
                 <Clipboard className="w-4 h-4 text-stone-400 shrink-0" />
                 <span>Save Copy As...</span>
@@ -489,7 +489,7 @@ export default function NoteActionManager() {
                   closeAll();
                   setOpenInfoModal(true);
                 }}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#1E2127]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
+                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-stone-50 dark:hover:bg-[#2E3039]/30 text-stone-700 dark:text-stone-300 transition-colors text-left cursor-pointer"
               >
                 <Info className="w-4 h-4 text-stone-400 shrink-0" />
                 <span>Detailed File Info</span>
@@ -512,11 +512,11 @@ export default function NoteActionManager() {
             </div>
 
             {/* Share & Export compact grid */}
-            <div className="grid grid-cols-3 gap-1 px-4 py-2 bg-stone-50/50 dark:bg-[#1C1D24]/20 border-t border-stone-100 dark:border-[#20222B] shrink-0 text-[10px] font-bold text-center">
+            <div className="grid grid-cols-3 gap-1 px-4 py-2 bg-stone-50/50 dark:bg-[#222328]/20 border-t border-stone-100 dark:border-[#2E3039] shrink-0 text-[10px] font-bold text-center">
               <button
                 type="button"
                 onClick={handleCopyMarkdown}
-                className="flex flex-col items-center justify-center gap-1 py-1 text-stone-600 hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-100 rounded hover:bg-stone-100/40 dark:hover:bg-[#1E2127]/40 transition-all cursor-pointer"
+                className="flex flex-col items-center justify-center gap-1 py-1 text-stone-600 hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-100 rounded hover:bg-stone-100/40 dark:hover:bg-[#2E3039]/40 transition-all cursor-pointer"
               >
                 <Clipboard className="w-4 h-4 text-stone-400" />
                 <span>Copy Raw</span>
@@ -525,7 +525,7 @@ export default function NoteActionManager() {
               <button
                 type="button"
                 onClick={handleExportMarkdownFile}
-                className="flex flex-col items-center justify-center gap-1 py-1 text-stone-600 hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-100 rounded hover:bg-stone-100/40 dark:hover:bg-[#1E2127]/40 transition-all cursor-pointer"
+                className="flex flex-col items-center justify-center gap-1 py-1 text-stone-600 hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-100 rounded hover:bg-stone-100/40 dark:hover:bg-[#2E3039]/40 transition-all cursor-pointer"
               >
                 <Download className="w-4 h-4 text-stone-400" />
                 <span>Download</span>
@@ -534,7 +534,7 @@ export default function NoteActionManager() {
               <button
                 type="button"
                 onClick={handleShareNote}
-                className="flex flex-col items-center justify-center gap-1 py-1 text-stone-600 hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-100 rounded hover:bg-stone-100/40 dark:hover:bg-[#1E2127]/40 transition-all cursor-pointer"
+                className="flex flex-col items-center justify-center gap-1 py-1 text-stone-600 hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-100 rounded hover:bg-stone-100/40 dark:hover:bg-[#2E3039]/40 transition-all cursor-pointer"
               >
                 <Share2 className="w-4 h-4 text-stone-400" />
                 <span>Share Link</span>
@@ -542,7 +542,7 @@ export default function NoteActionManager() {
             </div>
 
             {/* Cancel Bottom Sheet Area */}
-            <div className="p-3 border-t border-stone-100 dark:border-[#20222B] flex items-center justify-center shrink-0">
+            <div className="p-3 border-t border-stone-100 dark:border-[#2E3039] flex items-center justify-center shrink-0">
               <button
                 type="button"
                 onClick={closeAll}
@@ -572,7 +572,7 @@ export default function NoteActionManager() {
               autoFocus
               value={renameTitle}
               onChange={(e) => setRenameTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#3E5A80] dark:focus:ring-[#5A89C7] text-stone-900 dark:text-stone-100"
+              className="w-full px-3 py-2 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] dark:focus:ring-[#A3B5F5] text-stone-900 dark:text-stone-100"
             />
           </div>
 
@@ -588,7 +588,7 @@ export default function NoteActionManager() {
             <button
               type="submit"
               id="btn-rename-submit"
-              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#3E5A80] hover:bg-[#324B6B] dark:bg-[#5A89C7] dark:hover:bg-[#4873AA] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] dark:bg-[#A3B5F5] dark:hover:bg-[#94A5F0] cursor-pointer"
             >
               Rename
             </button>
@@ -612,7 +612,7 @@ export default function NoteActionManager() {
               autoFocus
               value={saveAsTitle}
               onChange={(e) => setSaveAsTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#3E5A80] dark:focus:ring-[#5A89C7] text-stone-900 dark:text-stone-100"
+              className="w-full px-3 py-2 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] dark:focus:ring-[#A3B5F5] text-stone-900 dark:text-stone-100"
             />
           </div>
 
@@ -628,7 +628,7 @@ export default function NoteActionManager() {
             <button
               type="submit"
               id="btn-save-as-submit"
-              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#3E5A80] hover:bg-[#324B6B] dark:bg-[#5A89C7] dark:hover:bg-[#4873AA] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] dark:bg-[#A3B5F5] dark:hover:bg-[#94A5F0] cursor-pointer"
             >
               Save As
             </button>
@@ -652,7 +652,7 @@ export default function NoteActionManager() {
             onClick={() => handleMoveToFolder(null)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-xs font-semibold text-left transition-colors cursor-pointer
               ${note.folderId === null 
-                ? 'bg-[#3E5A80]/10 text-[#3E5A80] dark:bg-[#5A89C7]/15 dark:text-[#5A89C7]' 
+                ? 'bg-[#1D2EA0]/10 text-[#1D2EA0] dark:bg-[#A3B5F5]/15 dark:text-[#A3B5F5]' 
                 : 'hover:bg-stone-100 dark:hover:bg-stone-900 text-stone-700 dark:text-stone-300'}`}
           >
             <FolderClosed className="w-4 h-4" />
@@ -668,7 +668,7 @@ export default function NoteActionManager() {
                 onClick={() => handleMoveToFolder(fold.id)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-xs font-semibold text-left transition-colors cursor-pointer
                   ${isNoteFolder 
-                    ? 'bg-[#3E5A80]/10 text-[#3E5A80] dark:bg-[#5A89C7]/15 dark:text-[#5A89C7]' 
+                    ? 'bg-[#1D2EA0]/10 text-[#1D2EA0] dark:bg-[#A3B5F5]/15 dark:text-[#A3B5F5]' 
                     : 'hover:bg-stone-100 dark:hover:bg-stone-900 text-stone-700 dark:text-stone-300'}`}
               >
                 <Folder className="w-4 h-4 shrink-0" />
@@ -696,13 +696,13 @@ export default function NoteActionManager() {
                 required
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#3E5A80] dark:focus:ring-[#5A89C7] text-stone-900 dark:text-stone-100"
+                className="w-full px-3 py-1.5 text-xs bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] dark:focus:ring-[#A3B5F5] text-stone-900 dark:text-stone-100"
                 placeholder="tag-name"
               />
             </div>
             <button
               type="submit"
-              className="px-3 py-1.5 rounded-sm text-xs font-bold uppercase text-white bg-[#3E5A80] hover:bg-[#324B6B] shrink-0 cursor-pointer h-8"
+              className="px-3 py-1.5 rounded-sm text-xs font-bold uppercase text-white bg-[#1D2EA0] hover:bg-[#18298B] shrink-0 cursor-pointer h-8"
             >
               Add
             </button>
@@ -720,13 +720,13 @@ export default function NoteActionManager() {
                 {note.tags.map((tg, idx) => (
                   <span 
                     key={idx} 
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#3E5A80]/10 border border-stone-200 dark:border-stone-800 text-[10px] text-[#3E5A80] dark:text-[#5A89C7] font-semibold"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#1D2EA0]/10 border border-stone-200 dark:border-stone-800 text-[10px] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold"
                   >
                     <span>#{tg}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tg)}
-                      className="hover:bg-[#3E5A80]/20 rounded-full p-0.5"
+                      className="hover:bg-[#1D2EA0]/20 rounded-full p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -767,7 +767,7 @@ export default function NoteActionManager() {
             <button
               type="button"
               onClick={closeAll}
-              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#3E5A80] hover:bg-[#324B6B] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] cursor-pointer"
             >
               Done
             </button>
@@ -852,7 +852,7 @@ export default function NoteActionManager() {
             </div>
             <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
               <span className="text-stone-400">Character Count</span>
-              <span className="font-mono font-bold text-[#3E5A80] dark:text-[#5A89C7]">{charCount}</span>
+              <span className="font-mono font-bold text-[#1D2EA0] dark:text-[#A3B5F5]">{charCount}</span>
             </div>
             <div className="flex justify-between items-center py-1">
               <span className="text-stone-400">Reading Speed</span>
@@ -864,7 +864,7 @@ export default function NoteActionManager() {
             <button
               type="button"
               onClick={closeAll}
-              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#3E5A80] hover:bg-[#324B6B] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] cursor-pointer"
             >
               Close
             </button>

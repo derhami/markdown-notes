@@ -4,8 +4,8 @@ Add-Type -AssemblyName System.Drawing
 $out = Join-Path $PSScriptRoot "public"
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 
-$accent = [System.Drawing.Color]::FromArgb(62, 90, 128)   # #3E5A80
-$ink    = [System.Drawing.Color]::FromArgb(250, 249, 246) # #FAF9F6
+$accent = [System.Drawing.Color]::FromArgb(62, 90, 128)   # #1D2EA0
+$ink    = [System.Drawing.Color]::FromArgb(250, 249, 246) # #F2F3F8
 
 function New-MDIcon([int]$size, [bool]$maskable, [string]$path) {
     $bmp = New-Object System.Drawing.Bitmap($size, $size)

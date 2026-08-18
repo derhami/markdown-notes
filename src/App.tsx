@@ -34,7 +34,7 @@ const NoteActionManager = lazy(() => import('./components/NoteActionManager'));
 const PersonalDashboard = lazy(() => import('./components/PersonalDashboard'));
 
 const PanelFallback = () => (
-  <div className="flex-1 h-full bg-[#FAF9F6] dark:bg-[#0D0E11] flex flex-col items-center justify-center text-stone-400">
+  <div className="flex-1 h-full bg-[#F2F3F8] dark:bg-[#111214] flex flex-col items-center justify-center text-stone-400">
     <p className="animate-pulse text-[10px] tracking-widest font-bold uppercase">LOADING PANEL...</p>
   </div>
 );
@@ -307,7 +307,7 @@ export default function App() {
               await db.tags.add({
                 id: generateId(),
                 name: tagName,
-                color: '#3E5A80',
+                color: '#1D2EA0',
                 createdAt: now
               });
             }
@@ -416,7 +416,7 @@ export default function App() {
     };
 
     return (
-      <div className="flex-1 h-full overflow-y-auto bg-[#FAF9F6] dark:bg-[#0D0E11] px-6 py-16 md:px-16 flex flex-col justify-center items-center select-none animate-fade-in transition-colors duration-200">
+      <div className="flex-1 h-full overflow-y-auto bg-[#F2F3F8] dark:bg-[#111214] px-6 py-16 md:px-16 flex flex-col justify-center items-center select-none animate-fade-in transition-colors duration-200">
         <div className="max-w-[520px] w-full text-center flex flex-col items-center gap-8">
           
           {/* Subtle localized greeting & Typographic Heading Pair */}
@@ -438,13 +438,13 @@ export default function App() {
               type="button"
               id="btn-desk-create"
               onClick={() => handleCreateNote(null)}
-              className="hover:text-[#3E5A80] dark:hover:text-[#5A89C7] transition-colors flex items-center gap-1.5 cursor-pointer py-1"
+              className="hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors flex items-center gap-1.5 cursor-pointer py-1"
             >
               <Plus className="w-4 h-4" />
               <span>Create Document</span>
             </button>
-            <span className="text-stone-200 dark:text-[#20222B]">|</span>
-            <label className="hover:text-[#3E5A80] dark:hover:text-[#5A89C7] transition-colors flex items-center gap-1.5 cursor-pointer py-1">
+            <span className="text-stone-200 dark:text-[#2E3039]">|</span>
+            <label className="hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors flex items-center gap-1.5 cursor-pointer py-1">
               <FileUp className="w-4 h-4" />
               <span>Import Markdown</span>
               <input
@@ -460,7 +460,7 @@ export default function App() {
 
           {/* Continue Writing prominence */}
           {recentNotes.length > 0 && (
-            <div className="w-full flex flex-col gap-3 mt-4 text-left border-t border-stone-200/50 dark:border-[#20222B] pt-6 select-none">
+            <div className="w-full flex flex-col gap-3 mt-4 text-left border-t border-stone-200/50 dark:border-[#2E3039] pt-6 select-none">
               <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest block mb-1 text-center">
                 Continue writing
               </span>
@@ -468,9 +468,9 @@ export default function App() {
                 type="button"
                 id={`btn-continue-note-${recentNotes[0].id}`}
                 onClick={() => setActiveNoteId(recentNotes[0].id)}
-                className="group flex flex-col gap-1.5 w-full text-left py-4 px-5 rounded-sm border border-stone-200/40 dark:border-[#20222B] bg-white dark:bg-[#141519] hover:border-[#3E5A80] dark:hover:border-[#5A89C7] transition-all cursor-pointer shadow-[0_1px_6px_rgba(0,0,0,0.01)] dark:shadow-none"
+                className="group flex flex-col gap-1.5 w-full text-left py-4 px-5 rounded-sm border border-stone-200/40 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] hover:border-[#1D2EA0] dark:hover:border-[#A3B5F5] transition-all cursor-pointer shadow-[0_1px_6px_rgba(0,0,0,0.01)] dark:shadow-none"
               >
-                <span className="text-base font-serif font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#3E5A80] dark:group-hover:text-[#5A89C7] transition-colors">
+                <span className="text-base font-serif font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#1D2EA0] dark:group-hover:text-[#A3B5F5] transition-colors">
                   {recentNotes[0].title || 'Untitled Document'}
                 </span>
                 <span className="text-[11px] text-stone-400 dark:text-stone-500 font-medium flex items-center gap-2">
@@ -503,7 +503,7 @@ export default function App() {
           )}
 
           {/* Minimal metrics text footer */}
-          <div className="text-[9px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest mt-6 select-none border-t border-stone-200/30 dark:border-[#20222B]/50 pt-4 w-full">
+          <div className="text-[9px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest mt-6 select-none border-t border-stone-200/30 dark:border-[#2E3039]/50 pt-4 w-full">
             {activeNotes.length} documents · {totalWords.toLocaleString()} words written
           </div>
 
@@ -514,7 +514,7 @@ export default function App() {
 
   if (!dbReady || !isLoaded) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-400">
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#F2F3F8] dark:bg-[#111214] text-stone-400">
         <p className="animate-pulse text-[10px] tracking-[0.2em] font-bold uppercase">BOOTSTRAPPING PERSONAL STUDIO...</p>
       </div>
     );
@@ -527,16 +527,16 @@ export default function App() {
 
   return (
     <div 
-      className="h-screen w-screen flex overflow-hidden bg-[#FAF9F6] dark:bg-[#0D0E11] text-stone-800 dark:text-[#E2E8F0] transition-colors duration-200 select-none relative"
+      className="h-screen w-screen flex overflow-hidden bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-[#E2E8F0] transition-colors duration-200 select-none relative"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       {/* Global Drag & Drop Overlay */}
       {isDragging && (
-        <div className="fixed inset-0 z-50 bg-[#3E5A80]/10 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-8 pointer-events-none select-none">
-          <div className="p-8 bg-white dark:bg-[#141519] rounded-sm border border-[#E5E4DF] dark:border-[#20222B] shadow-2xl flex flex-col items-center gap-3 text-center max-w-sm">
-            <div className="p-3 bg-[#FAF9F6] dark:bg-[#1C1D24] text-[#3E5A80] dark:text-[#5A89C7] rounded-sm">
+        <div className="fixed inset-0 z-50 bg-[#1D2EA0]/10 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-8 pointer-events-none select-none">
+          <div className="p-8 bg-white dark:bg-[#1A1B1E] rounded-sm border border-[#D1D4DC] dark:border-[#2E3039] shadow-2xl flex flex-col items-center gap-3 text-center max-w-sm">
+            <div className="p-3 bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] rounded-sm">
               <FileUp className="w-6 h-6 animate-bounce" />
             </div>
             <div>
@@ -557,7 +557,7 @@ export default function App() {
         <>
           <div 
             style={{ width: isMobile ? '100%' : `${settings.noteListWidth || 320}px` }}
-            className="border-e border-[#E5E4DF] dark:border-[#20222B] shrink-0 h-full overflow-hidden flex flex-col relative bg-white dark:bg-[#141519] transition-colors duration-200"
+            className="border-e border-[#D1D4DC] dark:border-[#2E3039] shrink-0 h-full overflow-hidden flex flex-col relative bg-white dark:bg-[#1A1B1E] transition-colors duration-200"
           >
             <NoteList />
           </div>
@@ -567,10 +567,10 @@ export default function App() {
             <div 
               onMouseDown={startResizing}
               className={`w-1 -mx-[2px] h-full cursor-col-resize relative z-30 transition-all shrink-0 select-none group
-                bg-transparent hover:bg-[#3E5A80]/20 dark:hover:bg-[#5A89C7]/20`}
+                bg-transparent hover:bg-[#1D2EA0]/20 dark:hover:bg-[#A3B5F5]/20`}
               title="Drag to resize"
             >
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-transparent group-hover:bg-[#3E5A80] dark:group-hover:bg-[#5A89C7] transition-colors" />
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-transparent group-hover:bg-[#1D2EA0] dark:group-hover:bg-[#A3B5F5] transition-colors" />
             </div>
           )}
         </>
@@ -593,7 +593,7 @@ export default function App() {
 
       {/* Responsive Bottom Navigation Rail (Only visible on mobile and only when in browsing mode) */}
       {isMobile && activeNoteId === null && (
-        <div className="fixed bottom-0 inset-x-0 h-14 border-t border-[#E5E4DF] dark:border-[#20222B] bg-white dark:bg-[#141519] flex items-center justify-around z-30 select-none transition-colors duration-200">
+        <div className="fixed bottom-0 inset-x-0 h-14 border-t border-[#D1D4DC] dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] flex items-center justify-around z-30 select-none transition-colors duration-200">
           <button
             type="button"
             onClick={() => {
@@ -601,7 +601,7 @@ export default function App() {
               setActiveNoteId(null);
             }}
             className={`flex flex-col items-center justify-center w-14 h-full cursor-pointer
-              ${activeCategory === 'all' ? 'text-[#3E5A80] dark:text-[#5A89C7]' : 'text-stone-400 dark:text-stone-500'}`}
+              ${activeCategory === 'all' ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
           >
             <FileText className="w-5 h-5" />
             <span className="text-[9px] font-bold mt-1 uppercase">Notes</span>
@@ -623,7 +623,7 @@ export default function App() {
               setActiveNoteId(null);
             }}
             className={`flex flex-col items-center justify-center w-14 h-full cursor-pointer
-              ${activeCategory === 'folders' ? 'text-[#3E5A80] dark:text-[#5A89C7]' : 'text-stone-400 dark:text-stone-500'}`}
+              ${activeCategory === 'folders' ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
           >
             <Folder className="w-5 h-5" />
             <span className="text-[9px] font-bold mt-1 uppercase">Folders</span>
@@ -633,7 +633,7 @@ export default function App() {
             type="button"
             onClick={() => setActiveNoteId('settings')}
             className={`flex flex-col items-center justify-center w-14 h-full cursor-pointer
-              ${activeNoteId === 'settings' ? 'text-[#3E5A80] dark:text-[#5A89C7]' : 'text-stone-400 dark:text-stone-500'}`}
+              ${activeNoteId === 'settings' ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
           >
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-bold mt-1 uppercase">Settings</span>
