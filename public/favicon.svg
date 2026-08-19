@@ -1,14 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Markdown Notes">
-  <defs>
-    <linearGradient id="md-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#27272a"/>
-      <stop offset="100%" stop-color="#18181b"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="118" fill="url(#md-bg)"/>
-  <g stroke="#ffffff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <path d="M130 348 V200 L195 348 L260 200 V348"/>
-    <path d="M292 200 A80 80 0 0 1 292 348"/>
-  </g>
-  <circle cx="392" cy="392" r="22" fill="#3E5A80"/>
+<svg width="1254" height="1254" viewBox="0 0 1254 1254" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 600C0 317.157 0 175.736 87.868 87.868C175.736 0 317.157 0 600 0H654C936.843 0 1078.26 0 1166.13 87.868C1254 175.736 1254 317.157 1254 600V654C1254 936.843 1254 1078.26 1166.13 1166.13C1078.26 1254 936.843 1254 654 1254H600C317.157 1254 175.736 1254 87.868 1166.13C0 1078.26 0 936.843 0 654V600Z" fill="url(#paint0_linear_2550_17140)"/>
+<path d="M926.903 347.656V900.65L920.21 907.343H808.272L801.579 900.65V459.594H452.304C450.227 467.826 448.303 475.365 447.611 483.981C439.148 591.38 444.457 737.245 447.611 847.105C448.226 867.184 460.459 891.957 445.611 907.343H333.673L326.98 900.65V347.656H926.98H926.903Z" fill="#73E49A"/>
+<defs>
+<linearGradient id="paint0_linear_2550_17140" x1="627" y1="0" x2="627" y2="1254" gradientUnits="userSpaceOnUse">
+<stop stop-color="#252528"/>
+<stop offset="1" stop-color="#18181B"/>
+</linearGradient>
+</defs>
 </svg>

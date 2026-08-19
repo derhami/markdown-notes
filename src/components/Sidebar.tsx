@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Star, Trash2, Folder as FolderIcon, Settings, Plus,
-  Search, Moon, Sun, Monitor, PenTool, Archive
+  Search, Moon, Sun, Monitor, Archive
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
@@ -101,10 +101,10 @@ export default function Sidebar() {
       <div className="flex flex-col gap-5 items-center w-full">
         {/* Logo Icon */}
         <div 
-          className="p-2 text-[#1D2EA0] dark:text-[#A3B5F5] hover:scale-105 transition-transform"
+          className="p-1 hover:scale-105 transition-transform"
           title="Markdown Notes"
         >
-          <PenTool className="w-5 h-5" />
+          <img src="/favicon.svg" alt="Markdown Notes" className="w-7 h-7 rounded-md" />
         </div>
 
         {/* Create Note Trigger */}
