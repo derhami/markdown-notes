@@ -4,6 +4,9 @@ buildscript {
     
     repositories {
         google()
+        // Pin Google's Maven to maven.google.com which resolves to genuine Google IPs
+        // (dl.google.com can be intercepted by some networks with a mismatched cert)
+        maven { url 'https://maven.google.com' }
         mavenCentral()
     }
     dependencies {
@@ -19,7 +22,10 @@ apply from: "variables.gradle"
 
 allprojects {
     repositories {
+        // Local mirror for artifacts that the flaky network intermittently 404s on
+        maven { url 'file:///C:/Users/Hamid/AppData/Local/Temp/opencode/android-m2' }
         google()
+        maven { url 'https://maven.google.com' }
         mavenCentral()
     }
 }

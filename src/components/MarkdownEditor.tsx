@@ -938,13 +938,17 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
           <div className={`flex-1 ${
             isSplitMode 
               ? 'overflow-hidden bg-white dark:bg-[#1A1B1E]' 
-              : `${isMobile ? 'p-0 bg-white dark:bg-[#1A1B1E]' : 'py-6 px-4 md:px-6 lg:px-8 bg-[#F2F3F8] dark:bg-[#111214] flex justify-center'} overflow-y-auto overflow-x-hidden`
-          } transition-colors duration-200 select-text scrollbar-thin`}>
-            {/* The beautiful floating reader sheet */}
+              : isMobile 
+                ? 'overflow-y-auto overflow-x-hidden p-0 bg-white dark:bg-[#1A1B1E]' 
+                : 'overflow-hidden py-6 px-4 md:px-6 lg:px-8 bg-[#F2F3F8] dark:bg-[#111214] flex justify-center'
+          } transition-colors duration-200 select-text`}>
+            {/* The beautiful floating reader sheet (fixed-height canvas; text scrolls inside so the background stays put) */}
             <div className={`w-full flex flex-col ${
               isSplitMode 
-                ? 'h-full p-6 md:p-10 border-e border-stone-200/50 dark:border-[#2E3039] overflow-y-auto overflow-x-hidden scrollbar-thin' 
-                : `${isMobile ? 'p-5 bg-white dark:bg-[#1A1B1E] min-h-full border-none rounded-none shadow-none' : `bg-white dark:bg-[#1A1B1E] border border-[#D1D4DC] dark:border-[#2E3039] shadow-[0_2px_15px_rgba(0,0,0,0.015)] rounded-sm p-8 md:p-14 min-h-full ${getWidthClass(settings.editorWidth)}`}`
+                ? 'h-full p-6 md:p-10 border-e border-stone-200/50 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] overflow-y-auto overflow-x-hidden scrollbar-thin' 
+                : isMobile 
+                  ? 'p-5 bg-white dark:bg-[#1A1B1E] min-h-full border-none rounded-none shadow-none'
+                  : `bg-white dark:bg-[#1A1B1E] border border-[#D1D4DC] dark:border-[#2E3039] shadow-[0_2px_15px_rgba(0,0,0,0.015)] rounded-sm h-full overflow-y-auto overflow-x-hidden scrollbar-thin p-8 md:p-14 ${getWidthClass(settings.editorWidth)}`
             }`}>
               {isPreviewOnly && (
                 <div className="mb-8 border-b border-stone-100/60 dark:border-stone-900/40 pb-4 select-none">

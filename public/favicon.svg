@@ -1,4 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="12" fill="#3E5A80"/>
-  <text x="32" y="45" font-family="Georgia, serif" font-size="38" font-weight="bold" fill="#FAF9F6" text-anchor="middle">M</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Markdown Notes">
+  <defs>
+    <linearGradient id="md-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#27272a"/>
+      <stop offset="100%" stop-color="#18181b"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="118" fill="url(#md-bg)"/>
+  <g stroke="#ffffff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M130 348 V200 L195 348 L260 200 V348"/>
+    <path d="M292 200 A80 80 0 0 1 292 348"/>
+  </g>
+  <circle cx="392" cy="392" r="22" fill="#3E5A80"/>
 </svg>
