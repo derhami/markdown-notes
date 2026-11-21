@@ -54,37 +54,37 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # The runner image does not ship platform 36, and Gradle cannot install
-      # it without accepted licences. Install exactly what the project targets.
-      - name: Install Android platform and build tools
-        run: |
-          yes | sdkmanager --licenses > /dev/null
-          sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
-
-      - name: Point Gradle at the SDK
-        run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
-
-      - name: Assemble debug APK
-        id: assemble
-        working-directory: android
+      # Everything that can fail is kept in one step so the diagnostics below
+      # always run, even when the SDK install itself is the problem.
+      - name: Install SDK and assemble debug APK
+        id: build
         continue-on-error: true
         run: |
           set -o pipefail
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
+          {
+            echo "ANDROID_HOME=$ANDROID_HOME"
+            echo "JAVA_HOME=$JAVA_HOME"
+            command -v sdkmanager || echo 'sdkmanager not on PATH'
+            java -version
+            yes | sdkmanager --licenses
+            sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+            echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+            cd android
+            chmod +x gradlew
+            ./gradlew assembleDebug --no-daemon --stacktrace
+          } 2>&1 | tee /tmp/build.log
 
-      # The job log is private; a failing build publishes its tail here so the
-      # error is visible from the public run page.
-      - name: Report Gradle failure
-        if: always() && steps.assemble.outcome != 'success'
+      # Job logs need authentication; the summary is visible on the public run.
+      - name: Publish build diagnostics
+        if: always()
         run: |
           {
-            echo '### Gradle build failed'
+            echo '### APK build output'
             echo '```'
-            tail -n 80 /tmp/gradle.log
+            tail -n 120 /tmp/build.log 2>/dev/null || echo 'no log captured'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          exit 1
+          test "${{ steps.build.outcome }}" = "success"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
