@@ -90,8 +90,11 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           if [ -f /tmp/build.log ]; then
-            MESSAGE=$(tail -n 40 /tmp/build.log | sed ':a;N;$!ba;s/\n/%0A/g' | cut -c1-6000)
-            echo "::error title=APK build log::${MESSAGE}"
+            tail -n 8 /tmp/build.log | while IFS= read -r line; do
+              echo "::error::$(printf '%s' "$line" | cut -c1-700)"
+            done
+          else
+            echo '::error::no build log was captured'
           fi
           test "${{ steps.build.outcome }}" = "success"
 
