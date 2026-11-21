@@ -78,7 +78,8 @@ jobs:
             ./gradlew assembleDebug --no-daemon --stacktrace
           } 2>&1 | tee /tmp/build.log
 
-      # Job logs need authentication; the summary is visible on the public run.
+      # Job logs need authentication; annotations are public, so the tail of
+      # the failing log is emitted as an annotation as well.
       - name: Publish build diagnostics
         if: always()
         run: |
@@ -88,6 +89,10 @@ jobs:
             tail -n 120 /tmp/build.log 2>/dev/null || echo 'no log captured'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f /tmp/build.log ]; then
+            MESSAGE=$(tail -n 40 /tmp/build.log | sed ':a;N;$!ba;s/\n/%0A/g' | cut -c1-6000)
+            echo "::error title=APK build log::${MESSAGE}"
+          fi
           test "${{ steps.build.outcome }}" = "success"
 
       # A public, unauthenticated copy of the failing log so it can be read
@@ -95,7 +100,7 @@ jobs:
       - name: Publish failure log to a branch
         if: always() && steps.build.outcome != 'success'
         env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ github.token }}
         run: |
           git config --global user.name "ci-logger"
           git config --global user.email "ci-logger@users.noreply.github.com"
