@@ -59,6 +59,23 @@ export function normalizeText(input: string): string {
     .trim();
 }
 
+const RTL_CHAR = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
+const LTR_CHAR = /[A-Za-z\u00C0-\u02AF\u0370-\u058F\u0900-\u1FFF\u2C00-\uD7FF]/;
+
+/**
+ * Direction of a paragraph from its first strong character, following the
+ * browser's own `dir="auto"` rule. Digits and punctuation are neutral, so
+ * "2024 Report" stays LTR and "گزارش 2024" stays RTL.
+ */
+export function getTextDirection(text: string): 'rtl' | 'ltr' {
+  if (!text) return 'ltr';
+  for (const char of text) {
+    if (RTL_CHAR.test(char)) return 'rtl';
+    if (LTR_CHAR.test(char)) return 'ltr';
+  }
+  return 'ltr';
+}
+
 /**
  * Splits prose into sentences for summaries and readability checks.
  */

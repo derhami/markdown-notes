@@ -10,6 +10,7 @@ import { Clipboard, Check } from 'lucide-react';
 import { useToastStore } from '../stores/useToastStore';
 import { titleFromHref, wikiLinkToMarkdown } from '../utils/links';
 import { attachmentIdFromMarkdown, getAttachmentObjectUrl } from '../utils/attachments';
+import { getTextDirection } from '../utils/notesHelper';
 import { useVaultStore } from '../stores/useVaultStore';
 
 interface MarkdownPreviewProps {
@@ -99,10 +100,10 @@ const getTextFromChildren = (nodes: any): string => {
   return '';
 };
 
-// Check if content contains Persian/Arabic characters
-const isRtlText = (text: string): boolean => {
-  return /[\u0600-\u06FF]/.test(text);
-};
+// Direction of one block, decided by its first strong character so a Persian
+// paragraph that contains English words (or the reverse) keeps one clean
+// reading direction instead of flipping in the middle.
+const directionOf = (text: string): 'rtl' | 'ltr' => getTextDirection(text);
 
 export default function MarkdownPreview({ content, onContentChange, onOpenNote }: MarkdownPreviewProps) {
   const { showToast } = useToastStore();
@@ -136,13 +137,11 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
   };
 
   // Content-aware class constructor for paragraph/heading elements
+  const blockDirection = (children: any) => directionOf(getTextFromChildren(children));
   const blockClass = (children: any, baseClasses: string) => {
-    const text = getTextFromChildren(children);
-    const rtl = isRtlText(text);
-    return `${baseClasses} ${
-      rtl 
-        ? 'text-right font-vazir tracking-tight leading-relaxed [direction:rtl]' 
-        : 'text-left font-serif leading-relaxed [direction:ltr]'
+    const dir = blockDirection(children);
+    return `${baseClasses} text-start ${
+      dir === 'rtl' ? 'font-vazir tracking-tight' : 'font-serif'
     }`;
   };
 
@@ -153,12 +152,13 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
         (c: any) => c.type === 'element' && c.tagName === 'input' && c.properties?.type === 'checkbox'
       );
       
-      const rtl = isRtlText(getTextFromChildren(children));
+      const dir = blockDirection(children);
 
       return (
         <li 
+          dir={dir}
           className={`${isTask ? 'list-none flex items-start gap-2 -ms-6 my-1' : 'list-disc my-1.5'} 
-            ${rtl ? 'font-vazir text-right [direction:rtl]' : 'font-serif text-left [direction:ltr]'}`} 
+            text-start ${dir === 'rtl' ? 'font-vazir' : 'font-serif'}`} 
           {...props}
         >
           {children}
@@ -190,6 +190,7 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
       return (
         <h1 
           id={id} 
+          dir={blockDirection(children)}
           className={blockClass(children, "text-2xl font-bold text-stone-900 dark:text-stone-100 border-b border-stone-100 dark:border-[#2E3039] pb-2 mt-8 mb-4 leading-snug")}
         >
           {children}
@@ -202,6 +203,7 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
       return (
         <h2 
           id={id} 
+          dir={blockDirection(children)}
           className={blockClass(children, "text-xl font-bold text-stone-900 dark:text-stone-100 mt-7 mb-3 pb-0.5 leading-snug")}
         >
           {children}
@@ -214,6 +216,7 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
       return (
         <h3 
           id={id} 
+          dir={blockDirection(children)}
           className={blockClass(children, "text-lg font-bold text-stone-900 dark:text-stone-100 mt-6 mb-2 leading-snug")}
         >
           {children}
@@ -222,7 +225,7 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
     },
     p: ({ children }: any) => {
       return (
-        <p className={blockClass(children, "text-sm text-stone-700 dark:text-stone-300 my-4 leading-relaxed")}>
+        <p dir={blockDirection(children)} className={blockClass(children, "text-sm text-stone-700 dark:text-stone-300 my-4 leading-relaxed")}>
           {children}
         </p>
       );
@@ -264,14 +267,12 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
       );
     },
     blockquote: ({ children }: any) => {
-      const text = getTextFromChildren(children);
-      const rtl = isRtlText(text);
+      const dir = blockDirection(children);
       return (
         <blockquote 
+          dir={dir}
           className={`my-5 py-1 text-stone-500 bg-stone-50/40 dark:bg-stone-900/10 italic text-sm border-stone-200 dark:border-stone-800
-            ${rtl 
-              ? 'border-r-2 pr-4 pl-2 text-right font-vazir [direction:rtl]' 
-              : 'border-l-2 pl-4 pr-2 text-left font-serif [direction:ltr]'}`}
+            border-s-2 ps-4 pe-2 text-start ${dir === 'rtl' ? 'font-vazir' : 'font-serif'}`}
         >
           {children}
         </blockquote>
@@ -353,18 +354,18 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
     },
     ul: ({ children }: any) => {
       const text = getTextFromChildren(children);
-      const rtl = isRtlText(text);
+      const dir = directionOf(text);
       return (
-        <ul className={`list-disc my-3 ${rtl ? 'pr-6 text-right [direction:rtl]' : 'pl-6 text-left [direction:ltr]'}`}>
+        <ul dir={dir} className="list-disc my-3 ps-6 text-start">
           {children}
         </ul>
       );
     },
     ol: ({ children }: any) => {
       const text = getTextFromChildren(children);
-      const rtl = isRtlText(text);
+      const dir = directionOf(text);
       return (
-        <ol className={`list-decimal my-3 ${rtl ? 'pr-6 text-right [direction:rtl]' : 'pl-6 text-left [direction:ltr]'}`}>
+        <ol dir={dir} className="list-decimal my-3 ps-6 text-start">
           {children}
         </ol>
       );

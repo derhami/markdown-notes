@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getTextDirection,
   calculateCharacterCount,
   calculateReadingTime,
   calculateWordCount,
@@ -16,6 +17,26 @@ describe('normalizeText', () => {
     expect(normalizeText('مارک‌داون')).toBe(normalizeText('مارکداون'));
     expect(normalizeText('كتاب')).toBe(normalizeText('کتاب'));
     expect(normalizeText('  Hello   WORLD ')).toBe('hello world');
+  });
+});
+
+describe('paragraph direction', () => {
+  it('follows the first strong character', () => {
+    expect(getTextDirection('این یک جمله فارسی با English داخل آن است')).toBe('rtl');
+    expect(getTextDirection('This English sentence mentions فارسی inside it')).toBe('ltr');
+  });
+
+  it('ignores neutral punctuation, numbers and spaces', () => {
+    expect(getTextDirection('  "2024" — گزارش سال')).toBe('rtl');
+    expect(getTextDirection('» 42 — Annual report')).toBe('ltr');
+    expect(getTextDirection('12345 !!!')).toBe('ltr');
+  });
+
+  it('keeps mixed paragraphs stable instead of flipping per word', () => {
+    const persian = 'نکته: از کلید Ctrl + K استفاده کنید';
+    const english = 'Tip: press Ctrl + K برای باز کردن پالت';
+    expect(getTextDirection(persian)).toBe('rtl');
+    expect(getTextDirection(english)).toBe('ltr');
   });
 });
 

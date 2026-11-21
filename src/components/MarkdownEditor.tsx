@@ -1106,7 +1106,10 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                 style={{
                   fontSize: `${isMobile ? Math.max(16, settings.editorFontSize) : settings.editorFontSize}px`,
                   lineHeight: settings.editorLineHeight,
-                  whiteSpace: settings.editorWordWrap ? 'pre-wrap' : 'pre'
+                  whiteSpace: settings.editorWordWrap ? 'pre-wrap' : 'pre',
+                  // Each line picks its own direction from its first strong
+                  // character, so mixed Persian/English lines never flip.
+                  unicodeBidi: 'plaintext'
                 }}
                 placeholder="Start writing markdown content..."
               />
