@@ -102,13 +102,13 @@ jobs:
             tail -n 120 /tmp/build.log 2>/dev/null || echo 'no log captured'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ -f /tmp/build.log ]; then
+          if [ "${{ steps.build.outcome }}" != 'success' ] && [ -f /tmp/build.log ]; then
             grep -nE 'FAILURE|error:|Error|Could not|Exception|What went wrong|failed' /tmp/build.log \
               | tail -n 8 \
               | while IFS= read -r line; do
                   echo "::error::$(printf '%s' "$line" | cut -c1-700)"
                 done
-          else
+          elif [ "${{ steps.build.outcome }}" != 'success' ]; then
             echo '::error::no build log was captured'
           fi
           test "${{ steps.build.outcome }}" = "success"
