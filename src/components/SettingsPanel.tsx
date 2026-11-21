@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, markWorkspaceSeeded } from '../db/database';
+import { importMarkdownFolder } from '../utils/importer';
 import { stringifyFrontmatter, sanitizeFileName } from '../utils/notesHelper';
 import { createZip, downloadBlob } from '../utils/zip';
 import { useSettingsStore } from '../stores/useSettingsStore';
@@ -232,6 +233,38 @@ export default function SettingsPanel() {
     } catch (err) {
       console.error(err);
       showToast('Backup restoration failed', 'error');
+    }
+  };
+
+  const handleFolderImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(event.target.files ?? []);
+    event.target.value = '';
+    if (picked.length === 0) return;
+
+    try {
+      const entries = await Promise.all(
+        picked
+          .filter((file) => /\.(md|markdown|mdown)$/i.test(file.name))
+          .map(async (file) => ({
+            path: (file as any).webkitRelativePath || file.name,
+            content: await file.text()
+          }))
+      );
+
+      if (entries.length === 0) {
+        showToast('No Markdown files found in that folder', 'info');
+        return;
+      }
+
+      const result = await importMarkdownFolder(entries);
+      const duplicates = result.duplicates > 0 ? ` · ${result.duplicates} already imported` : '';
+      showToast(
+        `Imported ${result.notes} notes into ${result.folders} new folders${duplicates}`,
+        'success'
+      );
+    } catch (error) {
+      console.error('Folder import failed', error);
+      showToast('Folder import failed', 'error');
     }
   };
 
@@ -693,6 +726,25 @@ export default function SettingsPanel() {
             />
           </label>
         </div>
+      </div>
+
+      {/* Folder import: Markdown / Obsidian vault */}
+      <div className="flex flex-col gap-2 mt-2 border-t border-stone-100 dark:border-[#2E3039] pt-5">
+        <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Import Markdown or Obsidian Folder</label>
+        <p className="text-[10px] text-stone-400 leading-normal font-semibold">
+          Keeps nested folders, frontmatter tags and <span className="font-mono">[[wiki links]]</span>. Hidden folders such as <span className="font-mono">.obsidian</span> and <span className="font-mono">.trash</span> are skipped, and importing the same folder twice adds nothing.
+        </p>
+        <label className="flex items-center justify-center gap-1.5 px-3 py-2 mt-1 rounded-sm text-xs font-bold border border-dashed border-stone-300 dark:border-[#2E3039] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-900/30 transition-colors cursor-pointer">
+          <Upload className="w-3.5 h-3.5 text-stone-400" />
+          <span>Choose Folder…</span>
+          <input
+            type="file"
+            multiple
+            onChange={handleFolderImport}
+            className="hidden"
+            {...({ webkitdirectory: '' } as any)}
+          />
+        </label>
       </div>
 
       {/* Restore Preview Block - PREVENT SILENT OVERWRITES */}
