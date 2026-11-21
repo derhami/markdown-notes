@@ -7,7 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, HelpCircle, HardDrive, Keyboard, Trash2, 
   Download, Upload, ShieldAlert, CheckCircle2, ChevronRight, X, ArrowLeft,
-  Shield, Lock, Unlock, Key, Eye, EyeOff, AlertTriangle, FileText, RefreshCw, Folder, Copy
+  Shield, Lock, Unlock, Key, Eye, EyeOff, AlertTriangle, FileText, RefreshCw, Folder, Copy,
+  FolderSync, Smartphone, Loader2
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, markWorkspaceSeeded } from '../db/database';
@@ -20,11 +21,27 @@ import { useToastStore } from '../stores/useToastStore';
 import { useVaultStore } from '../stores/useVaultStore';
 import type { Theme, Note } from '../types';
 import { withoutVaultSettings } from '../utils/backup';
+import { describeSyncReport, isNativeShell } from '../utils/folderSync';
+import { useSyncStore } from '../stores/useSyncStore';
 
 export default function SettingsPanel() {
   const { settings, updateSettings } = useSettingsStore();
   const { setActiveNoteId } = useWorkspaceStore();
   const { showToast } = useToastStore();
+  const {
+    connected: syncConnected,
+    folderLabel: syncFolderLabel,
+    lastSyncAt,
+    lastReport,
+    autoSync,
+    status: syncStatus,
+    error: syncError,
+    connect: connectSyncFolder,
+    syncNow,
+    disconnect: disconnectSyncFolder,
+    setAutoSync
+  } = useSyncStore();
+  const nativeShell = isNativeShell();
   const { 
     isLocked, 
     vaultPasswordExists, 
@@ -82,12 +99,6 @@ export default function SettingsPanel() {
     conflictsList: string[];
     data: any;
   } | null>(null);
-  const [isFileSystemSupported, setIsFileSystemSupported] = useState(false);
-  const [localDirName, setLocalDirName] = useState<string | null>(null);
-
-  useEffect(() => {
-    setIsFileSystemSupported('showDirectoryPicker' in window);
-  }, []);
 
   // Backups export
   const handleExportBackup = async () => {
@@ -268,49 +279,14 @@ export default function SettingsPanel() {
     }
   };
 
-  // Real browser File System Access API
-  const handleSelectLocalFolder = async () => {
-    try {
-      const handle = await (window as any).showDirectoryPicker();
-      if (handle) {
-        setLocalDirName(handle.name);
-        showToast(`Connected to local directory: ${handle.name}`, 'success');
-
-        // Let's offer a complete instant sync!
-        let count = 0;
-        for (const note of notes) {
-          if (note.deletedAt) continue;
-          
-          let title = note.title || 'Untitled';
-          let content = note.content || '';
-
-          if (note.isEncrypted) {
-            if (isLocked) {
-              title = `Locked_Note_${note.id}`;
-              content = '<!-- Locked Secure Note -->';
-            } else {
-              const dec = useVaultStore.getState().decryptedNotes[note.id];
-              title = dec?.title || 'Untitled_Secure_Note';
-              content = dec?.content || '';
-            }
-          }
-
-          // Clean filename from illegal characters
-          const safeTitle = title.replace(/[\\/:*?"<>|]/g, '_');
-          const fileHandle = await handle.getFileHandle(`${safeTitle}.md`, { create: true });
-          const writable = await fileHandle.createWritable();
-          await writable.write(content);
-          await writable.close();
-          count++;
-        }
-        showToast(`Successfully synced ${count} notes to local folder.`, 'success');
-      }
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        console.error(err);
-        showToast('Directory access blocked or failed.', 'error');
-      }
-    }
+  const relativeSyncTime = (timestamp: number | null) => {
+    if (!timestamp) return 'not synced yet';
+    const minutes = Math.round((Date.now() - timestamp) / 60000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours} h ago`;
+    return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   // Bundle every note into one ZIP: browsers block chains of downloads.
@@ -604,44 +580,113 @@ export default function SettingsPanel() {
         <div className="flex flex-col gap-0.5">
           <h4 className="text-xs font-bold text-amber-800 dark:text-amber-400">Uninstall Safety Warning</h4>
           <p className="text-[10px] text-stone-500 dark:text-stone-400 leading-relaxed font-medium">
-            This workspace operates <strong>offline-first</strong>. All notes reside strictly in your local browser sandbox database. Cleaning browser caches or deleting application variables will permanently delete your work.
+            This workspace operates <strong>offline-first</strong>. All notes live in this device's local database. Uninstalling the app or clearing its storage deletes that database — connect a Markdown folder below (or export a backup) to keep an editable copy outside the app.
           </p>
         </div>
       </div>
 
-      {/* File System Access API Area */}
-      <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#2E3039] pt-4">
+      {/* Two-way Markdown folder mirror */}
+      <div className="flex flex-col gap-2 border-t border-stone-100 dark:border-[#2E3039] pt-4">
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
-          <Folder className="w-3.5 h-3.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
-          <span>Local Directory Sync (File System Access)</span>
+          <FolderSync className="w-3.5 h-3.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+          <span>Markdown Folder Sync</span>
         </label>
         <p className="text-[10px] text-stone-400 leading-relaxed font-semibold">
-          Select a local folder on your computer to directly write and synchronize your notes as native Markdown (.md) files.
+          Keep a real folder of <span className="font-mono">.md</span> files in two-way sync. Notes are written with their
+          folder tree and frontmatter, edits made in another editor come back, and deleted notes remove their file.
+          {' '}Secure vault notes are never written to disk.
         </p>
-        
-        <div className="mt-2.5">
-          {isFileSystemSupported ? (
-            <div className="flex items-center gap-3">
+
+        {syncConnected ? (
+          <div className="flex flex-col gap-3 mt-1">
+            <div className="flex items-center gap-2.5 rounded-sm border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <div className="min-w-0 flex flex-col gap-0.5">
+                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 truncate">
+                  {syncFolderLabel || 'Connected folder'}
+                </span>
+                <span className="text-[10px] text-stone-400 dark:text-stone-500 font-semibold">
+                  {syncStatus === 'syncing' ? 'Syncing…' : `Last sync ${relativeSyncTime(lastSyncAt)} · ${autoSync ? 'auto-sync on' : 'manual'}`}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={handleSelectLocalFolder}
-                className="px-3.5 py-1.5 bg-[#1D2EA0] text-white hover:bg-[#18298B] dark:bg-[#A3B5F5] text-xs font-bold rounded-sm cursor-pointer flex items-center gap-1.5 transition-colors"
+                id="btn-settings-sync-now"
+                onClick={() => void syncNow('manual')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3.5 py-1.5 bg-[#1D2EA0] text-white hover:bg-[#18298B] dark:bg-[#A3B5F5] text-xs font-bold rounded-sm cursor-pointer flex items-center gap-1.5 transition-colors disabled:opacity-60"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Sync to Local Directory</span>
+                {syncStatus === 'syncing' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5" />
+                )}
+                <span>{syncStatus === 'syncing' ? 'Syncing…' : 'Sync now'}</span>
               </button>
-              {localDirName && (
-                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                  ✓ Connected: {localDirName}
+              <button
+                type="button"
+                onClick={() => void disconnectSyncFolder()}
+                className="px-3 py-1.5 border border-stone-200 dark:border-[#2E3039] text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/30 text-xs font-semibold rounded-sm cursor-pointer transition-colors"
+              >
+                Disconnect
+              </button>
+            </div>
+
+            <label className="flex items-center justify-between gap-3 py-1">
+              <span className="flex flex-col gap-0.5">
+                <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">Automatic sync</span>
+                <span className="text-[10px] text-stone-400 dark:text-stone-500 font-semibold">
+                  Mirror changes a couple of seconds after you stop typing.
                 </span>
-              )}
-            </div>
-          ) : (
-            <div className="py-2 px-3 bg-stone-100 dark:bg-[#222328] border border-stone-200/50 dark:border-[#2E3039] text-[10px] text-stone-400 dark:text-stone-500 font-semibold rounded-sm">
-              File System Access API is not supported by your browser sandbox. Use manual backups and individual downloads below.
-            </div>
-          )}
-        </div>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoSync}
+                onClick={() => void setAutoSync(!autoSync)}
+                className={`w-10 h-5.5 rounded-full p-0.5 shrink-0 transition-colors duration-200 cursor-pointer
+                  ${autoSync ? 'bg-[#1D2EA0] dark:bg-[#A3B5F5]' : 'bg-stone-200 dark:bg-[#222328]'}`}
+              >
+                <span
+                  className={`block w-4.5 h-4.5 rounded-full bg-white shadow-sm transform transition-transform duration-200
+                    ${autoSync ? 'translate-x-4.5' : 'translate-x-0'}`}
+                />
+              </button>
+            </label>
+
+            {lastReport && (
+              <p className="text-[10px] text-stone-400 dark:text-stone-500 font-semibold leading-relaxed">
+                {describeSyncReport(lastReport)}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 mt-1">
+            <button
+              type="button"
+              id="btn-settings-connect-folder"
+              onClick={() => void connectSyncFolder()}
+              className="px-3.5 py-2 bg-[#1D2EA0] text-white hover:bg-[#18298B] dark:bg-[#A3B5F5] text-xs font-bold rounded-sm cursor-pointer flex items-center justify-center gap-1.5 transition-colors self-start"
+            >
+              {nativeShell ? <Smartphone className="w-3.5 h-3.5" /> : <Folder className="w-3.5 h-3.5" />}
+              <span>{nativeShell ? 'Use device folder' : 'Choose sync folder'}</span>
+            </button>
+            <p className="text-[10px] text-stone-400 dark:text-stone-500 font-semibold leading-relaxed">
+              {nativeShell
+                ? 'Notes are mirrored to Documents/Markdown Notes, where any file manager or folder-sync app can pick them up.'
+                : 'Pick any folder on this computer. The browser asks once for read and write access.'}
+            </p>
+          </div>
+        )}
+
+        {syncError && (
+          <p className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold leading-relaxed mt-1">
+            {syncError}
+          </p>
+        )}
       </div>
 
       {/* Individual note downloads */}
@@ -1191,9 +1236,57 @@ export default function SettingsPanel() {
         </div>
 
         {/* Mobile Settings Body */}
-        <div className="flex-1 overflow-y-auto pb-safe">
+        <div className="flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))]">
           {mobileSection === 'menu' ? (
             <div className="flex flex-col p-4 gap-1">
+              {/* Sync is the one setting people come back to, so it gets a card. */}
+              <div className="mb-3 rounded-xl border border-stone-200/70 dark:border-[#2E3039] bg-[#F7F8FC] dark:bg-[#222328] p-3.5 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        syncStatus === 'syncing'
+                          ? 'bg-amber-500 animate-pulse'
+                          : syncConnected
+                            ? 'bg-emerald-500'
+                            : 'bg-stone-400'
+                      }`}
+                    />
+                    <span className="text-[11px] font-bold text-stone-700 dark:text-stone-200 truncate">
+                      {syncConnected ? 'Markdown folder sync' : 'Folder sync is off'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('storage');
+                      setMobileSection('storage');
+                    }}
+                    className="text-[10px] font-bold text-[#1D2EA0] dark:text-[#A3B5F5] shrink-0"
+                  >
+                    Manage
+                  </button>
+                </div>
+                <span className="text-[10px] text-stone-400 dark:text-stone-500 font-semibold leading-relaxed">
+                  {syncConnected
+                    ? `${syncFolderLabel || 'Folder'} · ${syncStatus === 'syncing' ? 'syncing…' : `last sync ${relativeSyncTime(lastSyncAt)}`}`
+                    : 'Mirror every note to a real folder of .md files.'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => (syncConnected ? void syncNow('manual') : void connectSyncFolder())}
+                  disabled={syncStatus === 'syncing'}
+                  className="self-start px-3 py-1.5 rounded-lg bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white dark:text-[#111214] text-[10px] font-bold flex items-center gap-1.5 disabled:opacity-60"
+                >
+                  {syncStatus === 'syncing' ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3 h-3" />
+                  )}
+                  <span>{syncConnected ? 'Sync now' : 'Connect a folder'}</span>
+                </button>
+              </div>
+
               {[
                 { id: 'appearance', label: 'Appearance', icon: Settings },
                 { id: 'editor', label: 'Editor Settings', icon: Keyboard },

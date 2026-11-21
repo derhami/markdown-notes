@@ -258,6 +258,47 @@ export default function NoteList() {
     });
   };
 
+  // Phones read a compact relative stamp instead of a full timestamp.
+  const relativeDate = (timestamp: number) => {
+    const minutes = Math.round((Date.now() - timestamp) / 60000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.round(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const plainSnippet = (note: Note) => {
+    const content = note.isEncrypted
+      ? isLocked
+        ? ''
+        : decryptedNotes[note.id]?.content || ''
+      : note.content || '';
+    return content
+      .replace(/^---[\s\S]*?---\s*/, '')
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/[#>*_`~|-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const mobileTitle =
+    activeCategory === 'trash'
+      ? 'Trash'
+      : activeCategory === 'favorites'
+        ? 'Favorites'
+        : activeCategory === 'pinned'
+          ? 'Pinned'
+          : activeCategory === 'archive'
+            ? 'Archive'
+            : activeCategory === 'folders' || activeCategory.startsWith('folder:')
+              ? 'Folders'
+              : 'All notes';
+
   // Check if Folders sidebar should be displayed
   const showFoldersTree = activeCategory === 'folders' || activeCategory.startsWith('folder:');
 
@@ -265,7 +306,22 @@ export default function NoteList() {
     <div className="w-full h-full bg-white dark:bg-[#1A1B1E] flex flex-col overflow-hidden select-none">
       
       {/* Search Header */}
-      <div className="p-4 flex flex-col gap-3 shrink-0 border-b border-stone-100 dark:border-[#2E3039]">
+      <div className="p-4 max-md:px-4 max-md:pt-4 max-md:pb-3 flex flex-col gap-3 shrink-0 border-b max-md:border-b-0 border-stone-100 dark:border-[#2E3039]">
+        {/* App-style mobile title bar */}
+        <div className="md:hidden flex items-end justify-between px-1">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500">
+              Library
+            </span>
+            <h1 className="text-[22px] font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-tight">
+              {mobileTitle}
+            </h1>
+          </div>
+          <span className="text-[11px] font-bold text-stone-400 dark:text-stone-500 pb-1">
+            {filteredNotes.length} {filteredNotes.length === 1 ? 'note' : 'notes'}
+          </span>
+        </div>
+
         {/* Sleek Search bar */}
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
@@ -275,7 +331,7 @@ export default function NoteList() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search notes... (Ctrl+K)"
-            className="w-full py-2.5 md:py-1.5 pl-9 pr-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all"
+            className="w-full py-2.5 md:py-1.5 pl-9 pr-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all max-md:rounded-full max-md:border-transparent max-md:bg-stone-100 dark:max-md:bg-[#222328] max-md:py-3 max-md:text-[13px]"
           />
         </div>
 
@@ -319,7 +375,7 @@ export default function NoteList() {
       </div>
 
       {/* Dynamic Browser List scroll area */}
-      <div className="flex-1 overflow-y-auto flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
+      <div className="flex-1 overflow-y-auto flex flex-col pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 max-md:bg-[#F4F5F9] dark:max-md:bg-[#111214] max-md:pt-1">
         
         {/* Folders Explorer (Visible in Folders view) */}
         {showFoldersTree && (
@@ -347,7 +403,7 @@ export default function NoteList() {
         )}
 
         {/* Notes list label header */}
-        <div className="px-4 pt-3 pb-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+        <div className="px-4 pt-3 pb-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider hidden md:block">
           {activeCategory === 'trash' ? 'Trash Documents' : 'Documents'}
         </div>
 
@@ -384,10 +440,11 @@ export default function NoteList() {
                   key={note.id}
                   id={`browser-note-${note.id}`}
                   onClick={() => setActiveNoteId(note.id)}
-                  className={`group relative flex flex-col gap-1 ${densityPadding} border-b border-stone-100/40 dark:border-[#2E3039]/30 transition-all cursor-pointer select-none
+                  className={`group relative flex flex-col gap-1.5 ${densityPadding} border-b border-stone-100/40 dark:border-[#2E3039]/30 transition-all cursor-pointer select-none
+                    max-md:mx-3 max-md:mb-2 max-md:rounded-2xl max-md:border max-md:border-stone-200/70 dark:max-md:border-[#2E3039] max-md:bg-white dark:max-md:bg-[#1E1F23] max-md:px-3.5 max-md:py-3 max-md:shadow-[0_1px_2px_rgba(16,24,40,0.04)] max-md:active:scale-[0.99]
                     ${isTitleRtl ? 'text-right' : 'text-left'}
                     ${isSelected 
-                      ? 'bg-[#F2F3F8] dark:bg-[#222328]' 
+                      ? 'max-md:border-[#1D2EA0] max-md:ring-1 max-md:ring-[#1D2EA0]/20 bg-[#F2F3F8] dark:bg-[#222328]' 
                       : 'hover:bg-stone-50/50 dark:hover:bg-[#2E3039]/20'}`}
                 >
                   {/* Note Row Heading */}
@@ -400,7 +457,7 @@ export default function NoteList() {
                           <Unlock className="w-3 h-3 text-emerald-500 shrink-0" />
                         )
                       )}
-                      <h3 className={`text-xs font-semibold leading-snug truncate flex-1
+                      <h3 className={`text-[13px] md:text-xs font-semibold leading-snug truncate flex-1
                         ${isSelected ? 'text-stone-900 dark:text-stone-100' : 'text-stone-700 dark:text-stone-300'}
                         ${(!note.title && !isSecure) ? 'italic text-stone-400' : ''}`}
                         style={{ fontFamily: isTitleRtl ? "'Vazirmatn', sans-serif" : 'inherit' }}
@@ -449,10 +506,34 @@ export default function NoteList() {
                     </div>
                   </div>
 
+                  {/* One-line preview: the main thing a phone list needs */}
+                  {(() => {
+                    const snippet = plainSnippet(note);
+                    if (!snippet) return null;
+                    return (
+                      <p
+                        dir="auto"
+                        className="md:hidden text-[11px] leading-relaxed text-stone-400 dark:text-stone-500 line-clamp-2"
+                      >
+                        {snippet}
+                      </p>
+                    );
+                  })()}
+
                   {/* Note Metadata row */}
                   <div className="flex items-center justify-between text-[9px] text-stone-400 font-medium">
-                    <span>
-                      {formatDate(note.updatedAt)}
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      <span className="md:hidden">{relativeDate(note.updatedAt)}</span>
+                      <span className="hidden md:inline">{formatDate(note.updatedAt)}</span>
+                      {(() => {
+                        const folderName = folders.find((folder) => folder.id === note.folderId)?.name;
+                        if (!folderName) return null;
+                        return (
+                          <span className="md:hidden truncate max-w-[110px] text-stone-300 dark:text-stone-600">
+                            · {folderName}
+                          </span>
+                        );
+                      })()}
                     </span>
                     <span>
                       {displayWordCount} words

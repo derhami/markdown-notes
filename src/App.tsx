@@ -6,7 +6,7 @@
 import React, { Suspense, lazy, useState, useEffect, useRef } from 'react';
 import { 
   Plus, FileUp, Settings, Clock, Pin, FileText, ArrowUpRight, 
-  Sparkles, Activity, PlusCircle, Search, CloudLightning, Command, Folder
+  Sparkles, Activity, PlusCircle, Search, CloudLightning, Command, Folder, House
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, initializeDemoData } from './db/database';
@@ -20,10 +20,12 @@ import {
 } from './utils/notesHelper';
 import { generateId } from './utils/id';
 import { withoutVaultSettings } from './utils/backup';
+import { useSyncStore } from './stores/useSyncStore';
 
 // Components
 import Sidebar from './components/Sidebar';
 import NoteList from './components/NoteList';
+import HomeView from './components/HomeView';
 import ToastContainer from './components/ToastContainer';
 import type { Note } from './types';
 
@@ -53,6 +55,8 @@ export default function App() {
   const [dbReady, setDbReady] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  // Phones land on a proper home screen instead of a bare file list.
+  const [mobileHome, setMobileHome] = useState(true);
 
   // Device-aware viewport states
   const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
@@ -101,6 +105,7 @@ export default function App() {
         await initializeDemoData();
         await loadSettings();
         await useVaultStore.getState().initVaultState();
+        await useSyncStore.getState().init();
         setDbReady(true);
       } catch (err) {
         console.error('Failed to bootstrap local database:', err);
@@ -628,7 +633,7 @@ export default function App() {
   const showMiddleColumn = activeNoteId === 'settings'
     ? false
     : isMobile
-      ? activeNoteId === null
+      ? activeNoteId === null && !mobileHome
       : !focusMode && sidebarOpen;
 
   // Never let the browser column eat the writing canvas on smaller laptops.
@@ -688,13 +693,22 @@ export default function App() {
       )}
 
       {/* 3. Zone 3: Main Action Canvas Panel (Hidden on Mobile if we are browsing the list) */}
-      {(!isMobile || activeNoteId !== null) && (
+      {(!isMobile || activeNoteId !== null || mobileHome) && (
         <div className="flex-1 h-full flex flex-col overflow-hidden relative">
           <Suspense fallback={<PanelFallback />}>
             {activeNoteId === 'settings' ? (
               <SettingsPanel />
             ) : activeNoteId ? (
               <MarkdownEditor noteId={activeNoteId} />
+            ) : isMobile ? (
+              <HomeView
+                onCreateNote={() => handleCreateNote(null)}
+                onBrowse={(category) => {
+                  setMobileHome(false);
+                  setActiveCategory(category);
+                  setActiveNoteId(null);
+                }}
+              />
             ) : (
               <PersonalDashboard />
             )}
@@ -702,54 +716,78 @@ export default function App() {
         </div>
       )}
 
-      {/* Responsive Bottom Navigation Rail (Only visible on mobile and only when in browsing mode) */}
-      {isMobile && activeNoteId === null && (
-        <div className="fixed bottom-0 inset-x-0 z-30 border-t border-[#D1D4DC] dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] pb-[env(safe-area-inset-bottom)] select-none transition-colors duration-200">
-          <div className="mobile-tabs h-14 flex items-center justify-around">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveCategory('all');
-              setActiveNoteId(null);
-            }}
-            className={`flex flex-col items-center justify-center w-14 h-full cursor-pointer
-              ${activeCategory === 'all' ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
-          >
-            <FileText className="w-5 h-5" />
-            <span className="text-[9px] font-bold mt-1 uppercase">Notes</span>
-          </button>
+      {/* App-style bottom navigation (phones only) */}
+      {isMobile && (activeNoteId === null || activeNoteId === 'settings') && (
+        <div className="fixed bottom-0 inset-x-0 z-30 border-t border-[#E2E3EA] dark:border-[#2E3039] bg-white/95 dark:bg-[#16171A]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] select-none">
+          <div className="mobile-tabs h-[62px] grid grid-cols-5 items-center px-1">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileHome(true);
+                setActiveNoteId(null);
+              }}
+              aria-label="Home"
+              className={`flex flex-col items-center justify-center gap-0.5 h-full cursor-pointer
+                ${mobileHome && activeNoteId === null ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
+            >
+              <House className="w-[21px] h-[21px]" strokeWidth={mobileHome && activeNoteId === null ? 2.2 : 1.8} />
+              <span className="text-[9px] font-bold uppercase tracking-wide">Home</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setCommandPaletteOpen(true)}
-            className="flex flex-col items-center justify-center w-14 h-full text-stone-400 dark:text-stone-500 cursor-pointer"
-          >
-            <Search className="w-5 h-5" />
-            <span className="text-[9px] font-bold mt-1 uppercase">Search</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileHome(false);
+                setActiveCategory('all');
+                setActiveNoteId(null);
+              }}
+              aria-label="Notes"
+              className={`flex flex-col items-center justify-center gap-0.5 h-full cursor-pointer
+                ${!mobileHome && (activeCategory === 'all' || activeCategory === 'favorites' || activeCategory === 'pinned' || activeCategory === 'recent' || activeCategory === 'archive' || activeCategory === 'trash' || activeCategory.startsWith('tag:')) ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
+            >
+              <FileText className="w-[21px] h-[21px]" strokeWidth={!mobileHome ? 2.2 : 1.8} />
+              <span className="text-[9px] font-bold uppercase tracking-wide">Notes</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              setActiveCategory('folders');
-              setActiveNoteId(null);
-            }}
-            className={`flex flex-col items-center justify-center w-14 h-full cursor-pointer
-              ${activeCategory === 'folders' ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
-          >
-            <Folder className="w-5 h-5" />
-            <span className="text-[9px] font-bold mt-1 uppercase">Folders</span>
-          </button>
+            <div className="flex items-center justify-center h-full">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileHome(false);
+                  void handleCreateNote(null);
+                }}
+                aria-label="Create note"
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white dark:text-[#111214] shadow-lg shadow-[#1D2EA0]/25 active:scale-95 transition-transform -mt-1 cursor-pointer"
+              >
+                <Plus className="w-5 h-5" strokeWidth={2.4} />
+              </button>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => setActiveNoteId('settings')}
-            className={`flex flex-col items-center justify-center w-14 h-full cursor-pointer
-              ${activeNoteId === 'settings' ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
-          >
-            <Settings className="w-5 h-5" />
-            <span className="text-[9px] font-bold mt-1 uppercase">Settings</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileHome(false);
+                setActiveCategory('folders');
+                setActiveNoteId(null);
+              }}
+              aria-label="Folders"
+              className={`flex flex-col items-center justify-center gap-0.5 h-full cursor-pointer
+                ${!mobileHome && (activeCategory === 'folders' || activeCategory.startsWith('folder:')) ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
+            >
+              <Folder className="w-[21px] h-[21px]" strokeWidth={!mobileHome && activeCategory === 'folders' ? 2.2 : 1.8} />
+              <span className="text-[9px] font-bold uppercase tracking-wide">Folders</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveNoteId('settings')}
+              aria-label="Settings"
+              className={`flex flex-col items-center justify-center gap-0.5 h-full cursor-pointer
+                ${activeNoteId === 'settings' ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
+            >
+              <Settings className="w-[21px] h-[21px]" strokeWidth={activeNoteId === 'settings' ? 2.2 : 1.8} />
+              <span className="text-[9px] font-bold uppercase tracking-wide">Settings</span>
+            </button>
           </div>
         </div>
       )}

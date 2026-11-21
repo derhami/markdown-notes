@@ -4,7 +4,9 @@
  */
 
 import Dexie, { type Table } from 'dexie';
-import type { Note, Folder, Tag, Settings, NoteVersion, Attachment } from '../types';
+import type {
+  Note, Folder, Tag, Settings, NoteVersion, Attachment, SyncIndexEntry, SyncHandleRow
+} from '../types';
 import {
   calculateWordCount,
   calculateCharacterCount,
@@ -18,6 +20,8 @@ export class MarkdownNotesDatabase extends Dexie {
   settings!: Table<Settings, string>;
   noteVersions!: Table<NoteVersion, string>;
   attachments!: Table<Attachment, string>;
+  syncIndex!: Table<SyncIndexEntry, string>;
+  syncHandles!: Table<SyncHandleRow, string>;
 
   constructor() {
     super('MarkdownNotesDatabase');
@@ -36,6 +40,12 @@ export class MarkdownNotesDatabase extends Dexie {
     this.version(3).stores({
       attachments: 'id, noteId, createdAt'
     });
+    // Folder mirroring: which Markdown file belongs to which note, plus the
+    // directory handle that was granted on the web.
+    this.version(4).stores({
+      syncIndex: 'noteId, path, syncedAt',
+      syncHandles: 'id'
+    });
   }
 }
 
@@ -53,7 +63,9 @@ export const DEFAULT_SETTINGS: Settings = {
   noteListWidth: 320,
   editorMode: 'split',
   uiDensity: 'comfortable',
-  editorWidth: 'comfortable'
+  editorWidth: 'comfortable',
+  syncAuto: true,
+  syncLastAt: 0
 };
 
 /**

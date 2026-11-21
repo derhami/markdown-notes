@@ -779,6 +779,16 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             </button>
           )}
 
+          {/* Compact mobile document title */}
+          {isMobile && (
+            <span
+              dir="auto"
+              className="md:hidden max-w-[38vw] truncate text-[13px] font-semibold text-stone-800 dark:text-stone-200 ms-1"
+            >
+              {localTitle || note.title || 'Untitled'}
+            </span>
+          )}
+
           {/* Save status text */}
           <div
             role="status"
@@ -818,7 +828,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             id="btn-toggle-toolbar"
             onClick={() => setShowToolbar(!showToolbar)}
             title="Toggle Markdown Toolbar (Ctrl+/)"
-            className={`p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer
+            className={`hidden md:inline-flex p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer
               ${showToolbar ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : ''}`}
           >
             <Sparkles className="w-4 h-4" />
@@ -831,7 +841,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             onClick={() => setSmartPanelOpen(true)}
             title="Smart Assistant (Ctrl+J)"
             aria-label="Open Smart Assistant"
-            className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
+            className="hidden md:inline-flex p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
           >
             <Wand2 className="w-4 h-4" />
           </button>
@@ -843,7 +853,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             onClick={() => setShowLinks(true)}
             title="Connections"
             aria-label="Open connections panel"
-            className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
+            className="hidden md:inline-flex p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
           >
             <Link2 className="w-4 h-4" />
           </button>
@@ -855,7 +865,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             onClick={() => setShowHistory(true)}
             title="Version History"
             aria-label="Open version history"
-            className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
+            className="hidden md:inline-flex p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
           >
             <HistoryIcon className="w-4 h-4" />
           </button>
@@ -947,7 +957,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               id="btn-mobile-layout-toggle"
               onClick={() => setNarrowView(isPreviewOnly ? 'editor' : 'preview')}
               title={isPreviewOnly ? "Switch to Editor View" : "Switch to Preview Reader"}
-              className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
+              className="hidden md:inline-flex p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
             >
               {isPreviewOnly ? (
                 <Edit3 className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
@@ -1062,7 +1072,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                   onChange={(e) => setLocalTitle(e.target.value)}
                   placeholder="Document Title"
                   dir="auto"
-                  className="w-full bg-transparent text-2xl font-bold font-serif text-stone-900 dark:text-stone-100 focus:outline-none placeholder-stone-200 dark:placeholder-stone-800 border-b border-stone-100/50 dark:border-stone-900/30 pb-2 leading-tight"
+                  className="w-full bg-transparent text-[26px] md:text-2xl font-bold font-serif text-stone-900 dark:text-stone-100 focus:outline-none placeholder-stone-200 dark:placeholder-stone-800 border-b border-stone-100/50 dark:border-stone-900/30 pb-2 leading-tight"
                 />
                 
                 {/* Note metadata inline tags */}
@@ -1384,6 +1394,63 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
           </div>
         )}
       </div>
+
+      {/* Mobile writing dock: the actions a thumb actually needs */}
+      {isMobile && (
+        <div className="shrink-0 border-t border-stone-200/70 dark:border-[#2E3039] bg-white/95 dark:bg-[#16171A]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] select-none">
+          <div className="h-[58px] grid grid-cols-5 items-center px-2">
+            {[
+              {
+                id: 'format',
+                label: 'Format',
+                icon: Sparkles,
+                active: showToolbar,
+                action: () => setShowToolbar(!showToolbar)
+              },
+              {
+                id: 'assist',
+                label: 'Assist',
+                icon: Wand2,
+                active: false,
+                action: () => setSmartPanelOpen(true)
+              },
+              {
+                id: 'links',
+                label: 'Links',
+                icon: Link2,
+                active: false,
+                action: () => setShowLinks(true)
+              },
+              {
+                id: 'history',
+                label: 'History',
+                icon: HistoryIcon,
+                active: false,
+                action: () => setShowHistory(true)
+              },
+              {
+                id: 'view',
+                label: isPreviewOnly ? 'Write' : 'Read',
+                icon: isPreviewOnly ? Edit3 : Eye,
+                active: isPreviewOnly,
+                action: () => setNarrowView(isPreviewOnly ? 'editor' : 'preview')
+              }
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={item.action}
+                aria-label={item.label}
+                className={`flex flex-col items-center justify-center gap-1 h-full rounded-xl transition-colors cursor-pointer
+                  ${item.active ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-500 dark:text-stone-400'}`}
+              >
+                <item.icon className="w-[19px] h-[19px]" />
+                <span className="text-[9px] font-bold uppercase tracking-wide">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Navigation Guard Confirmation Modal */}
       <Modal

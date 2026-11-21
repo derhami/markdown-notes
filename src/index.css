@@ -37,6 +37,23 @@ html, body, button, input, textarea, select, option, kbd, code, pre {
   background: rgba(120, 113, 108, 0.3);
 }
 
+/* Screen-level transition used when a phone moves between home, list and
+   document. Short enough to feel native, long enough to give direction. */
+@keyframes screenIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-screen-in {
+  animation: screenIn 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* Elegant fade-in transition */
 @keyframes fadeIn {
   from {
@@ -120,6 +137,28 @@ a {
 html {
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Native-app touch feel: labels and cards react on press without a hover
+   wash that would stick around on touch screens. */
+@media (max-width: 767px) {
+  .mobile-tabs button,
+  button,
+  label {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* The bottom dock and home screen sit above the system gesture bar. */
+  .app-shell {
+    overscroll-behavior-y: none;
+  }
 }
 
 body {

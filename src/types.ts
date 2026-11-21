@@ -40,6 +40,19 @@ export interface Attachment {
   iv?: string;
 }
 
+export interface SyncIndexEntry {
+  noteId: string;
+  path: string;
+  syncedAt: number;
+  remoteModified: number;
+}
+
+export interface SyncHandleRow {
+  id: string;
+  // A FileSystemDirectoryHandle is structured-cloneable and survives IndexedDB.
+  handle: any;
+}
+
 export interface NoteVersion {
   id: string;
   noteId: string;
@@ -91,6 +104,10 @@ export interface Settings {
   vaultKdfIterations?: number; // PBKDF2 rounds for the password-derived key
   vaultRecoveryKdfIterations?: number; // PBKDF2 rounds for the recovery-key-derived key
   seededAt?: number; // Set once demo content has been seeded, so wiping stays wiped
+  syncTarget?: 'browser' | 'device'; // Where the Markdown mirror lives
+  syncAuto?: boolean; // Mirror edits automatically after they settle
+  syncFolderLabel?: string; // Human readable folder path for the UI
+  syncLastAt?: number; // Timestamp of the last successful pass
 }
 
 export type Theme = 'light' | 'dark' | 'system';
