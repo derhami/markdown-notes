@@ -16,7 +16,7 @@ on:
       - '.github/workflows/android-apk.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   apk:
@@ -51,8 +51,20 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # Install the SDK directly: the setup-android action fails on current
+      # runners before Gradle is reached.
+      - name: Install Android command-line tools
+        run: |
+          set -euo pipefail
+          SDK_ROOT="$RUNNER_TOOL_CACHE/android-sdk"
+          mkdir -p "$SDK_ROOT/cmdline-tools"
+          curl -fsSL -o /tmp/cmdline-tools.zip \
+            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q /tmp/cmdline-tools.zip -d "$SDK_ROOT/cmdline-tools"
+          mv "$SDK_ROOT/cmdline-tools/cmdline-tools" "$SDK_ROOT/cmdline-tools/latest"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
 
       # Everything that can fail is kept in one step so the diagnostics below
       # always run, even when the SDK install itself is the problem.
@@ -97,24 +109,6 @@ jobs:
             echo '::error::no build log was captured'
           fi
           test "${{ steps.build.outcome }}" = "success"
-
-      # A public, unauthenticated copy of the failing log so it can be read
-      # without repository admin rights.
-      - name: Publish failure log to a branch
-        if: always() && steps.build.outcome != 'success'
-        env:
-          TOKEN: ${{ github.token }}
-        run: |
-          git config --global user.name "ci-logger"
-          git config --global user.email "ci-logger@users.noreply.github.com"
-          cd "$RUNNER_TEMP"
-          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" logrepo
-          cd logrepo
-          cp /tmp/build.log apk-build-error.log
-          git checkout -b "ci-log-${GITHUB_RUN_ID}"
-          git add apk-build-error.log
-          git commit -m "APK build log for run ${GITHUB_RUN_ID}"
-          git push origin "ci-log-${GITHUB_RUN_ID}"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
