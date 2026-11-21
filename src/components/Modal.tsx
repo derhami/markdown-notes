@@ -36,7 +36,10 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
       <div 
         id="modal-card"
-        className="relative w-full max-w-md bg-white dark:bg-[#16171B] border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all duration-300 scale-100"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="relative w-full max-w-md bg-white dark:bg-[#16171B] border border-stone-200 dark:border-stone-800 rounded-md shadow-2xl flex flex-col max-h-[85dvh] overflow-hidden transform transition-all duration-300 scale-100"
       >
         {/* Header */}
         <div className={`flex items-center justify-between p-5 border-b border-stone-100 dark:border-stone-800 shrink-0

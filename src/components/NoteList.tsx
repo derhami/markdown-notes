@@ -11,12 +11,15 @@ import {
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
+import { deleteVersionsForNote } from '../utils/versions';
+import { deleteAttachmentsForNote } from '../utils/attachments';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useToastStore } from '../stores/useToastStore';
 import { useNoteActionsStore } from '../stores/useNoteActionsStore';
 import { useVaultStore } from '../stores/useVaultStore';
 import { generateId } from '../utils/id';
+import { normalizeText } from '../utils/notesHelper';
 import FolderTree from './FolderTree';
 import Modal from './Modal';
 import type { Note, Folder as FolderType } from '../types';
@@ -27,6 +30,12 @@ export default function NoteList() {
   } = useWorkspaceStore();
   const { settings } = useSettingsStore();
   const { showToast } = useToastStore();
+  const densityPadding =
+    settings.uiDensity === 'compact'
+      ? 'py-2 px-3'
+      : settings.uiDensity === 'spacious'
+        ? 'py-5 px-4'
+        : 'py-3 px-4';
   const { isLocked, showHidden, decryptedNotes } = useVaultStore();
 
   // Folder & subfolder modal states
@@ -61,7 +70,10 @@ export default function NoteList() {
     }
     if (note.isArchived) return false;
 
-    if (activeCategory === 'all' || activeCategory === 'folders' || activeCategory === 'recent') {
+    if (activeCategory === 'recent') {
+      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      return note.updatedAt >= weekAgo;
+    } else if (activeCategory === 'all' || activeCategory === 'folders') {
       return true;
     } else if (activeCategory === 'favorites') {
       return note.isFavorite;
@@ -72,33 +84,37 @@ export default function NoteList() {
       return note.folderId === folderId;
     } else if (activeCategory.startsWith('tag:')) {
       const tagName = activeCategory.substring(4);
-      return note.tags.includes(tagName);
+      // Secure notes keep their tags inside the encrypted payload.
+      const noteTags = note.isEncrypted ? decryptedNotes[note.id]?.tags || [] : note.tags;
+      return noteTags.includes(tagName);
     }
     return true;
   });
 
   // Search filter
   if (searchQuery.trim()) {
-    const query = searchQuery.toLowerCase().trim();
+    // Normalized search: Persian/Arabic letter variants, diacritics and ZWNJ
+    // should not make an otherwise identical query miss.
+    const query = normalizeText(searchQuery.trim()).toLowerCase();
     filteredNotes = filteredNotes.filter((note) => {
       // Secure note masking under search
       let noteTitle = note.title || '';
       let noteContent = note.content || '';
+      let noteTags = note.tags || [];
 
       if (note.isEncrypted) {
-        if (isLocked) {
-          noteTitle = 'Locked Note';
-          noteContent = '';
-        } else {
-          const dec = decryptedNotes[note.id];
-          noteTitle = dec?.title || 'Untitled Secure Note';
-          noteContent = dec?.content || '';
-        }
+        const dec = isLocked ? undefined : decryptedNotes[note.id];
+        noteTitle = dec?.title || 'Locked Note';
+        noteContent = dec?.content || '';
+        noteTags = dec?.tags || [];
       }
 
-      const titleMatch = noteTitle.toLowerCase().includes(query);
-      const contentMatch = noteContent.toLowerCase().includes(query);
-      return titleMatch || contentMatch;
+      const titleMatch = normalizeText(noteTitle).toLowerCase().includes(query);
+      const contentMatch = normalizeText(noteContent).toLowerCase().includes(query);
+      const tagMatch = noteTags.some((tag) =>
+        normalizeText(tag).toLowerCase().includes(query)
+      );
+      return titleMatch || contentMatch || tagMatch;
     });
   }
 
@@ -159,6 +175,8 @@ export default function NoteList() {
         const trashed = rawNotes.filter(n => n.deletedAt !== null);
         for (const note of trashed) {
           await db.notes.delete(note.id);
+          await deleteVersionsForNote(note.id);
+          await deleteAttachmentsForNote(note.id);
         }
         showToast('Trash emptied', 'success');
         setActiveNoteId(null);
@@ -257,7 +275,7 @@ export default function NoteList() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search notes... (Ctrl+K)"
-            className="w-full py-1.5 pl-9 pr-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all"
+            className="w-full py-2.5 md:py-1.5 pl-9 pr-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all"
           />
         </div>
 
@@ -301,7 +319,7 @@ export default function NoteList() {
       </div>
 
       {/* Dynamic Browser List scroll area */}
-      <div className="flex-1 overflow-y-auto flex flex-col">
+      <div className="flex-1 overflow-y-auto flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
         
         {/* Folders Explorer (Visible in Folders view) */}
         {showFoldersTree && (
@@ -366,7 +384,7 @@ export default function NoteList() {
                   key={note.id}
                   id={`browser-note-${note.id}`}
                   onClick={() => setActiveNoteId(note.id)}
-                  className={`group relative flex flex-col gap-1 py-3 px-4 border-b border-stone-100/40 dark:border-[#2E3039]/30 transition-all cursor-pointer select-none
+                  className={`group relative flex flex-col gap-1 ${densityPadding} border-b border-stone-100/40 dark:border-[#2E3039]/30 transition-all cursor-pointer select-none
                     ${isTitleRtl ? 'text-right' : 'text-left'}
                     ${isSelected 
                       ? 'bg-[#F2F3F8] dark:bg-[#222328]' 
@@ -392,14 +410,14 @@ export default function NoteList() {
                     </div>
 
                     {/* pin/favorite/more triggers visible on row hover and always on mobile */}
-                    <div className="opacity-100 md:opacity-0 group-hover:opacity-100 flex items-center gap-1 shrink-0 transition-opacity">
+                    <div className="hover-actions flex items-center gap-1 shrink-0 transition-opacity">
                       {activeCategory !== 'trash' && (
                         <>
                           <button
                             type="button"
                             id={`btn-browse-pin-${note.id}`}
                             onClick={(e) => handleTogglePin(e, note)}
-                            className={`p-0.5 rounded hover:bg-stone-250 dark:hover:bg-stone-750 transition-colors cursor-pointer
+                            className={`p-1.5 md:p-0.5 rounded hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors cursor-pointer
                               ${note.isPinned ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-300 dark:text-stone-700'}`}
                           >
                             <Pin className="w-3 h-3 fill-current" />
@@ -408,7 +426,7 @@ export default function NoteList() {
                             type="button"
                             id={`btn-browse-fav-${note.id}`}
                             onClick={(e) => handleToggleFavorite(e, note)}
-                            className={`p-0.5 rounded hover:bg-stone-250 dark:hover:bg-stone-750 transition-colors cursor-pointer
+                            className={`p-1.5 md:p-0.5 rounded hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors cursor-pointer
                               ${note.isFavorite ? 'text-amber-500' : 'text-stone-300 dark:text-stone-700'}`}
                           >
                             <Star className="w-3 h-3 fill-current" />
@@ -423,7 +441,7 @@ export default function NoteList() {
                           const isMobile = window.innerWidth < 768;
                           openActions(note.id, isMobile);
                         }}
-                        className="p-0.5 rounded hover:bg-stone-250 dark:hover:bg-stone-750 transition-colors cursor-pointer text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200"
+                        className="p-1.5 md:p-0.5 rounded hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors cursor-pointer text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200"
                         title="Document Actions"
                       >
                         <MoreVertical className="w-3.5 h-3.5" />

@@ -1,6 +1,6 @@
-# Markdown Notes - AI Agent Instructions & Guidelines
+# Markdown Notes — Architecture & Design Guidelines
 
-This file serves as the core source of truth for the **Markdown Notes** architecture, design system, and technical guidelines. All modifications and future implementations must align with the decisions outlined below.
+This document is the source of truth for the **Markdown Notes** architecture, design system, and technical guidelines. All modifications and future implementations must align with the decisions outlined below.
 
 ---
 

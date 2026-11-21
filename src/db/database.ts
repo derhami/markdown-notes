@@ -4,13 +4,20 @@
  */
 
 import Dexie, { type Table } from 'dexie';
-import type { Note, Folder, Tag, Settings } from '../types';
+import type { Note, Folder, Tag, Settings, NoteVersion, Attachment } from '../types';
+import {
+  calculateWordCount,
+  calculateCharacterCount,
+  calculateReadingTime
+} from '../utils/notesHelper';
 
 export class MarkdownNotesDatabase extends Dexie {
   notes!: Table<Note, string>;
   folders!: Table<Folder, string>;
   tags!: Table<Tag, string>;
   settings!: Table<Settings, string>;
+  noteVersions!: Table<NoteVersion, string>;
+  attachments!: Table<Attachment, string>;
 
   constructor() {
     super('MarkdownNotesDatabase');
@@ -19,6 +26,15 @@ export class MarkdownNotesDatabase extends Dexie {
       folders: 'id, name, parentId, createdAt, updatedAt',
       tags: 'id, name, color, createdAt',
       settings: 'id'
+    });
+    // Version history: per-note snapshots kept locally so an accidental
+    // rewrite can be rolled back without restoring a whole backup.
+    this.version(2).stores({
+      noteVersions: 'id, noteId, createdAt'
+    });
+    // Local attachments (images pasted or dropped into a note).
+    this.version(3).stores({
+      attachments: 'id, noteId, createdAt'
     });
   }
 }
@@ -36,17 +52,55 @@ export const DEFAULT_SETTINGS: Settings = {
   sidebarOpen: true,
   noteListWidth: 320,
   editorMode: 'split',
-  accentColor: '#3e6493', // sophisticated muted cobalt accent
   uiDensity: 'comfortable',
   editorWidth: 'comfortable'
 };
 
 /**
+ * The first-run seed used to create a small folder tree. Folders are now
+ * entirely user-defined, so any untouched leftovers are removed instead of
+ * being recreated on fresh installs.
+ */
+const LEGACY_SEED_FOLDERS = [
+  { id: 'f1', name: 'پروژه‌ها (Projects)' },
+  { id: 'f2', name: 'روزمره‌نویسی (Journal)' },
+  { id: 'f1_sub', name: 'طراحی بصری (Visual Design)' }
+];
+
+/**
+ * Drops seed folders that older workspaces may still contain. Notes and
+ * subfolders are moved to the root so nothing becomes unreachable.
+ */
+async function dropLegacySeedFolders() {
+  for (const legacy of LEGACY_SEED_FOLDERS) {
+    const folder = await db.folders.get(legacy.id);
+    if (!folder || folder.name !== legacy.name) continue;
+
+    await db.transaction('rw', db.folders, db.notes, async () => {
+      await db.notes.where('folderId').equals(legacy.id).modify({ folderId: null });
+      await db.folders.where('parentId').equals(legacy.id).modify({ parentId: null });
+      await db.folders.delete(legacy.id);
+    });
+  }
+}
+
+/**
  * Initialize Demo Data in the database if empty
  */
 export async function initializeDemoData() {
+  await dropLegacySeedFolders();
+
+  const existingSettings = await db.settings.get('current');
+
+  // The seed is a one-time event. Without this guard, deleting every note or
+  // wiping the database would resurrect the demo content on the next reload.
+  if (existingSettings?.seededAt) return;
+
   const notesCount = await db.notes.count();
-  if (notesCount > 0) return; // DB already has data
+  if (notesCount > 0) {
+    await db.settings.update('current', { seededAt: Date.now() });
+    return;
+  }
 
   const now = Date.now();
 
@@ -59,16 +113,8 @@ export async function initializeDemoData() {
   ];
   await db.tags.bulkAdd(demoTags);
 
-  // Create folder structure
-  const demoFolders = [
-    { id: 'f1', name: 'پروژه‌ها (Projects)', parentId: null, createdAt: now, updatedAt: now },
-    { id: 'f2', name: 'روزمره‌نویسی (Journal)', parentId: null, createdAt: now, updatedAt: now },
-    { id: 'f1_sub', name: 'طراحی بصری (Visual Design)', parentId: 'f1', createdAt: now, updatedAt: now }
-  ];
-  await db.folders.bulkAdd(demoFolders);
-
-  // Default settings
-  await db.settings.put({ id: 'current', ...DEFAULT_SETTINGS });
+  // Default settings + seed marker
+  await db.settings.put({ id: 'current', ...DEFAULT_SETTINGS, seededAt: now });
 
   // Create demo notes
   const demoNotes: Note[] = [
@@ -172,7 +218,7 @@ greetUser('نویسنده خلاق');
 ## ۵. نقل قول (Blockquote)
 > "نوشتن، نوعی اندیشیدن روی کاغذ است. هر چه ساده‌تر، روشن‌تر و عمیق‌تر."
 `,
-      folderId: 'f1_sub',
+      folderId: null,
       tags: ['guide', 'ideas'],
       isFavorite: false,
       isPinned: false,
@@ -200,7 +246,7 @@ greetUser('نویسنده خلاق');
 - رنگ تم تیره بسیار عمیق طراحی شود تا چشم در تاریکی خسته نشود (بر پایه رنگ سیاه عمیق \`#111214\`).
 - در بخش تنظیمات، میزان ذخیره فضا به مگابایت به صورت دقیق به کاربر گزارش شود.
 `,
-      folderId: 'f1',
+      folderId: null,
       tags: ['work', 'ideas'],
       isFavorite: false,
       isPinned: false,
@@ -213,5 +259,27 @@ greetUser('نویسنده خلاق');
     }
   ];
 
-  await db.notes.bulkAdd(demoNotes);
+  // Counts are derived from the real content instead of hardcoded numbers.
+  await db.notes.bulkAdd(
+    demoNotes.map((note) => ({
+      ...note,
+      wordCount: calculateWordCount(note.content),
+      characterCount: calculateCharacterCount(note.content),
+      readingTime: calculateReadingTime(note.content)
+    }))
+  );
+}
+
+/**
+ * Marks the workspace as already seeded. Used after a deliberate wipe so the
+ * demo library does not come back, while still writing a valid settings row.
+ */
+export async function markWorkspaceSeeded() {
+  const current = await db.settings.get('current');
+  await db.settings.put({
+    id: 'current',
+    ...DEFAULT_SETTINGS,
+    ...(current ?? {}),
+    seededAt: Date.now()
+  });
 }

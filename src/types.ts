@@ -25,6 +25,33 @@ export interface Note {
   encryptionSalt?: string; // Salt used for key derivation of this note if different or generic
 }
 
+export interface Attachment {
+  id: string;
+  noteId: string;
+  name: string;
+  mime: string;
+  size: number;
+  createdAt: number;
+  encrypted: boolean;
+  /** Plain bytes for notes that are not encrypted. */
+  blob?: Blob;
+  /** Base64 ciphertext + iv when the note lives in the vault. */
+  data?: string;
+  iv?: string;
+}
+
+export interface NoteVersion {
+  id: string;
+  noteId: string;
+  title: string;
+  createdAt: number;
+  wordCount: number;
+  /** Plaintext snapshot. Present only for notes that are not encrypted. */
+  content?: string;
+  /** Encrypted snapshot (iv:ciphertext) for notes that live in the vault. */
+  payload?: string;
+}
+
 export interface Folder {
   id: string;
   name: string;
@@ -51,8 +78,7 @@ export interface Settings {
   sidebarOpen: boolean;
   noteListWidth: number;
   editorMode: 'editor' | 'split' | 'preview';
-  accentColor: string; // e.g., "#4f46e5" (Indigo)
-  uiDensity: 'comfortable' | 'compact';
+  uiDensity: 'comfortable' | 'compact' | 'spacious';
   editorWidth?: 'focused' | 'comfortable' | 'wide';
   vaultSalt?: string; // Base64 salt for PBKDF2 key derivation (password)
   vaultVerifier?: string; // iv:ciphertext of a verifier string encrypted with the password-derived key
@@ -62,6 +88,9 @@ export interface Settings {
   vaultWrappedMasterKeyRecovery?: string; // iv:ciphertext of the AES master key wrapped with the recovery-derived key
   vaultAutoLockDelay?: 'immediately' | '5m' | '15m' | '30m' | '1h' | 'never'; // Auto-lock configuration
   vaultShowHidden?: boolean; // Hidden notes visibility preference
+  vaultKdfIterations?: number; // PBKDF2 rounds for the password-derived key
+  vaultRecoveryKdfIterations?: number; // PBKDF2 rounds for the recovery-key-derived key
+  seededAt?: number; // Set once demo content has been seeded, so wiping stays wiped
 }
 
 export type Theme = 'light' | 'dark' | 'system';

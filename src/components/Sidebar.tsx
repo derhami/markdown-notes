@@ -6,13 +6,14 @@
 import React, { useState } from 'react';
 import { 
   FileText, Star, Trash2, Folder as FolderIcon, Settings, Plus,
-  Search, Moon, Sun, Monitor, Archive
+  Search, Moon, Sun, Monitor, Archive, Pin, Hash, Clock
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { useWorkspaceStore, SidebarCategory } from '../stores/useWorkspaceStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useToastStore } from '../stores/useToastStore';
+import { useVaultStore } from '../stores/useVaultStore';
 import { generateId } from '../utils/id';
 import Modal from './Modal';
 import type { Folder, Tag, Note } from '../types';
@@ -23,6 +24,7 @@ export default function Sidebar() {
   } = useWorkspaceStore();
   const { settings, updateSettings } = useSettingsStore();
   const { showToast } = useToastStore();
+  const { decryptedNotes } = useVaultStore();
   
   // Storage size estimation
   const notes = useLiveQuery(() => db.notes.toArray()) || [];
@@ -33,7 +35,8 @@ export default function Sidebar() {
     (JSON.stringify(notes).length + JSON.stringify(folders).length + JSON.stringify(tags).length) / 1024
   );
 
-  // Folder modal state (preserved for functional correctness)
+  // Folder & tag modal state
+  const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [folderName, setFolderName] = useState('');
   const [parentFolderId, setParentFolderId] = useState<string | null>(null);
@@ -94,6 +97,19 @@ export default function Sidebar() {
 
   const isFoldersTabActive = activeCategory === 'folders' || activeCategory.startsWith('folder:');
 
+  // Tag overview: dictionary tags plus tags only present inside secure payloads.
+  const tagCounts = new Map<string, number>();
+  for (const note of notes) {
+    if (note.deletedAt) continue;
+    const noteTags = note.isEncrypted ? decryptedNotes[note.id]?.tags || [] : note.tags || [];
+    for (const tag of noteTags) {
+      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    }
+  }
+  const tagList = Array.from(
+    new Set([...tags.map((tag) => tag.name), ...tagCounts.keys()])
+  ).sort((a, b) => a.localeCompare(b));
+
   return (
     <div className="w-[52px] md:w-[56px] h-full shrink-0 bg-[#E8E9EE] dark:bg-[#222328] border-e border-[#D1D4DC] dark:border-[#2E3039] flex flex-col items-center py-4 justify-between select-none z-20">
       
@@ -143,7 +159,7 @@ export default function Sidebar() {
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeCategory === 'all' && activeNoteId !== 'settings'
               ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
-              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="All Documents"
         >
           <FileText className="w-4.5 h-4.5" />
@@ -160,7 +176,7 @@ export default function Sidebar() {
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${isFoldersTabActive && activeNoteId !== 'settings'
               ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
-              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Folder Explorer"
         >
           <FolderIcon className="w-4.5 h-4.5" />
@@ -177,10 +193,58 @@ export default function Sidebar() {
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeCategory === 'favorites' && activeNoteId !== 'settings'
               ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
-              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Favorites"
         >
           <Star className="w-4.5 h-4.5" />
+        </button>
+
+        {/* Pinned notes */}
+        <button
+          type="button"
+          id="btn-rail-pinned"
+          onClick={() => {
+            setActiveCategory('pinned');
+            setActiveNoteId(null);
+          }}
+          className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
+            ${activeCategory === 'pinned' && activeNoteId !== 'settings'
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold'
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
+          title="Pinned Notes"
+        >
+          <Pin className="w-4.5 h-4.5" />
+        </button>
+
+        {/* Recently edited */}
+        <button
+          type="button"
+          id="btn-rail-recent"
+          onClick={() => {
+            setActiveCategory('recent');
+            setActiveNoteId(null);
+          }}
+          className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
+            ${activeCategory === 'recent' && activeNoteId !== 'settings'
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold'
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
+          title="Recently Edited (7 days)"
+        >
+          <Clock className="w-4.5 h-4.5" />
+        </button>
+
+        {/* Tags overview */}
+        <button
+          type="button"
+          id="btn-rail-tags"
+          onClick={() => setIsTagsModalOpen(true)}
+          className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
+            ${activeCategory.startsWith('tag:')
+              ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold'
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
+          title="Browse Tags"
+        >
+          <Hash className="w-4.5 h-4.5" />
         </button>
 
         {/* Archive List */}
@@ -194,7 +258,7 @@ export default function Sidebar() {
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeCategory === 'archive' && activeNoteId !== 'settings'
               ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
-              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Archived Documents"
         >
           <Archive className="w-4.5 h-4.5" />
@@ -211,7 +275,7 @@ export default function Sidebar() {
           className={`w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer
             ${activeCategory === 'trash' && activeNoteId !== 'settings'
               ? 'bg-[#D1D4DC] dark:bg-[#2E3039] text-stone-900 dark:text-stone-100 font-semibold' 
-              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-850/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100'}`}
           title="Trash Bin"
         >
           <Trash2 className="w-4.5 h-4.5" />
@@ -253,6 +317,45 @@ export default function Sidebar() {
           <Settings className="w-4.5 h-4.5" />
         </button>
       </div>
+
+      {/* Tag browser */}
+      <Modal
+        isOpen={isTagsModalOpen}
+        onClose={() => setIsTagsModalOpen(false)}
+        title="Browse Tags"
+      >
+        {tagList.length === 0 ? (
+          <p className="text-xs text-stone-400 italic py-4 text-center">
+            No tags yet. Add tags from a note's action menu.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-1 max-h-[50dvh] overflow-y-auto">
+            {tagList.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => {
+                  setActiveCategory(`tag:${tag}`);
+                  setActiveNoteId(null);
+                  setIsTagsModalOpen(false);
+                }}
+                className={`flex items-center justify-between px-3 py-2 rounded text-xs transition-colors cursor-pointer
+                  ${activeCategory === `tag:${tag}`
+                    ? 'bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold'
+                    : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/40'}`}
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <Hash className="w-3 h-3 shrink-0 text-stone-400" />
+                  <span className="truncate">{tag}</span>
+                </span>
+                <span className="text-[10px] text-stone-400 shrink-0">
+                  {tagCounts.get(tag) || 0}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </Modal>
 
       {/* Preserved Modal structure so no functional features are lost */}
       <Modal

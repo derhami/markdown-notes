@@ -4,12 +4,77 @@
  */
 
 /**
+ * A word starts with a letter/number and continues through letters, numbers,
+ * combining marks, ZWNJ (Persian half-space) and apostrophes. Markdown
+ * control characters can never become a word on their own.
+ */
+const WORD_PATTERN = /[\p{L}\p{N}][\p{L}\p{N}\p{M}\u200C\u200D'’\-]*/gu;
+
+/**
+ * Extracts prose from Markdown so fenced code, inline code, images and
+ * syntax characters are not counted as written words.
+ */
+export function stripMarkdown(markdown: string): string {
+  if (!markdown) return '';
+  return markdown
+    .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]*)`/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+    .replace(/^\s{0,3}>\s?/gm, '')
+    .replace(/^\s*[-*+]\s+\[[ xX]\]\s+/gm, '')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/(\*\*|__)(.*?)\1/g, '$2')
+    .replace(/~~(.*?)~~/g, '$1')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\|/g, ' ')
+    .replace(/^[-*_]{3,}$/gm, ' ')
+    // Keep line breaks: they separate list items and hard-wrapped sentences,
+    // which the summarizer relies on to avoid one giant run-on sentence.
+    .replace(/[ \t\f\v]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * Normalizes Persian/Arabic variants so search matches what users type:
+ * ی/ي, ک/ك, آ/ا, removes diacritics and tatweel, and drops ZWNJ so
+ * "مارک‌داون" and "مارکداون" compare equal.
+ */
+export function normalizeText(input: string): string {
+  if (!input) return '';
+  return input
+    .normalize('NFKC')
+    .replace(/[\u064B-\u0652\u0670\u0640]/g, '')
+    .replace(/[يى]/g, 'ی')
+    .replace(/ك/g, 'ک')
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/\u200C/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Splits prose into sentences for summaries and readability checks.
+ */
+export function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?…؟۔])\s+|\n+/u)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 0);
+}
+
+/**
  * Calculates words in a text, supporting English, Persian, and mixed scripts correctly.
  */
 export function calculateWordCount(text: string): number {
   if (!text) return 0;
-  // Match English words, Persian/Arabic words, and numbers
-  const words = text.trim().match(/[\w\d\u0600-\u06FF]+/g);
+  const words = stripMarkdown(text).match(WORD_PATTERN);
   return words ? words.length : 0;
 }
 
@@ -26,6 +91,7 @@ export function calculateCharacterCount(text: string): number {
  */
 export function calculateReadingTime(text: string): number {
   const wordCount = calculateWordCount(text);
+  // 180 wpm is a realistic pace for mixed English/Persian prose.
   const time = Math.ceil(wordCount / 180);
   return time < 1 ? 1 : time;
 }

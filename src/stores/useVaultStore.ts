@@ -14,7 +14,10 @@ import {
   registerRecoveryKey as cryptoRegisterRecoveryKey,
   unlockWithPassword as cryptoUnlockWithPassword,
   unlockWithRecoveryKey as cryptoUnlockWithRecoveryKey,
-  changeVaultPassword as cryptoChangeVaultPassword
+  changeVaultPassword as cryptoChangeVaultPassword,
+  upgradeVaultKdf as cryptoUpgradeVaultKdf,
+  CURRENT_PBKDF2_ITERATIONS,
+  LEGACY_PBKDF2_ITERATIONS
 } from '../utils/crypto';
 
 interface DecryptedNote {
@@ -51,6 +54,8 @@ interface VaultState {
 }
 
 let autoLockTimeoutId: any = null;
+let lastActivityAt = Date.now();
+let lastTimerRestartAt = 0;
 
 // Decrypt every secure note with the provided master key.
 const loadDecryptedNotes = async (masterKey: CryptoKey): Promise<Record<string, DecryptedNote>> => {
@@ -83,7 +88,7 @@ export const useVaultStore = create<VaultState>((set, get) => {
     else if (autoLockDelay === '1h') delayMs = 60 * 60 * 1000;
 
     autoLockTimeoutId = setTimeout(() => {
-      const elapsed = Date.now() - get().lastActivityTime;
+      const elapsed = Date.now() - lastActivityAt;
       if (elapsed >= delayMs) {
         get().lock();
       } else {
@@ -126,7 +131,9 @@ export const useVaultStore = create<VaultState>((set, get) => {
         vaultRecoveryKeyHash: secrets.recoverySalt,
         vaultRecoveryVerifier: secrets.recoveryVerifier,
         vaultWrappedMasterKey: secrets.wrappedMasterKey,
-        vaultWrappedMasterKeyRecovery: secrets.wrappedMasterKeyRecovery
+        vaultWrappedMasterKeyRecovery: secrets.wrappedMasterKeyRecovery,
+        vaultKdfIterations: secrets.iterations,
+        vaultRecoveryKdfIterations: secrets.iterations
       };
 
       await db.settings.update('current', updatePayload);
@@ -157,7 +164,8 @@ export const useVaultStore = create<VaultState>((set, get) => {
       await db.settings.update('current', {
         vaultRecoveryKeyHash: secret.recoverySalt,
         vaultRecoveryVerifier: secret.recoveryVerifier,
-        vaultWrappedMasterKeyRecovery: secret.wrappedMasterKeyRecovery
+        vaultWrappedMasterKeyRecovery: secret.wrappedMasterKeyRecovery,
+        vaultRecoveryKdfIterations: secret.iterations
       });
 
       set({ recoveryKeyGenerated: recoveryKey });
@@ -176,14 +184,16 @@ export const useVaultStore = create<VaultState>((set, get) => {
         newPassword,
         current.vaultSalt,
         current.vaultVerifier,
-        current.vaultWrappedMasterKey
+        current.vaultWrappedMasterKey,
+        current.vaultKdfIterations || LEGACY_PBKDF2_ITERATIONS
       );
       if (!result) return false;
 
       await db.settings.update('current', {
         vaultSalt: result.salt,
         vaultVerifier: result.verifier,
-        vaultWrappedMasterKey: result.wrappedMasterKey
+        vaultWrappedMasterKey: result.wrappedMasterKey,
+        vaultKdfIterations: result.iterations
       });
 
       // Decrypt notes with the same master key (it never changed)
@@ -204,17 +214,40 @@ export const useVaultStore = create<VaultState>((set, get) => {
         return false;
       }
 
+      const iterations = current.vaultKdfIterations || LEGACY_PBKDF2_ITERATIONS;
       const masterKey = await cryptoUnlockWithPassword(
         password,
         current.vaultSalt,
         current.vaultVerifier,
-        current.vaultWrappedMasterKey
+        current.vaultWrappedMasterKey,
+        iterations
       );
       if (!masterKey) return false;
+
+      // Legacy vaults are upgraded in place: the master key (and therefore
+      // every note) stays the same, only the wrapping gets stronger.
+      if (iterations < CURRENT_PBKDF2_ITERATIONS) {
+        try {
+          const upgraded = await cryptoUpgradeVaultKdf(
+            password,
+            masterKey,
+            CURRENT_PBKDF2_ITERATIONS
+          );
+          await db.settings.update('current', {
+            vaultSalt: upgraded.salt,
+            vaultVerifier: upgraded.verifier,
+            vaultWrappedMasterKey: upgraded.wrappedMasterKey,
+            vaultKdfIterations: upgraded.iterations
+          });
+        } catch (error) {
+          console.error('Vault KDF upgrade failed:', error);
+        }
+      }
 
       // Decrypt all secure notes into memory with the master key
       const decryptedMap = await loadDecryptedNotes(masterKey);
 
+      lastActivityAt = Date.now();
       set({
         isLocked: false,
         derivedKey: masterKey,
@@ -242,12 +275,16 @@ export const useVaultStore = create<VaultState>((set, get) => {
         recoveryKey.trim(),
         current.vaultRecoveryKeyHash,
         current.vaultRecoveryVerifier,
-        current.vaultWrappedMasterKeyRecovery
+        current.vaultWrappedMasterKeyRecovery,
+        current.vaultRecoveryKdfIterations ||
+          current.vaultKdfIterations ||
+          LEGACY_PBKDF2_ITERATIONS
       );
       if (!masterKey) return false;
 
       const decryptedMap = await loadDecryptedNotes(masterKey);
 
+      lastActivityAt = Date.now();
       set({
         isLocked: false,
         derivedKey: masterKey,
@@ -286,7 +323,8 @@ export const useVaultStore = create<VaultState>((set, get) => {
         tags: [],
         wordCount: 0,
         characterCount: 0,
-        readingTime: 0
+        readingTime: 0,
+        updatedAt: Date.now()
       });
 
       // Save original in memory cache
@@ -325,7 +363,8 @@ export const useVaultStore = create<VaultState>((set, get) => {
         tags: plain.tags,
         wordCount: words,
         characterCount: chars,
-        readingTime: read
+        readingTime: read,
+        updatedAt: Date.now()
       });
 
       // Remove from decrypted cache
@@ -348,7 +387,11 @@ export const useVaultStore = create<VaultState>((set, get) => {
         encryptionIv: iv,
         title: 'Locked Note',
         content: '',
-        tags: []
+        tags: [],
+        wordCount: 0,
+        characterCount: 0,
+        readingTime: 0,
+        updatedAt: Date.now()
       });
 
       // Update memory cache
@@ -372,9 +415,12 @@ export const useVaultStore = create<VaultState>((set, get) => {
     },
 
     recordActivity: () => {
-      set({ lastActivityTime: Date.now() });
+      // Track activity outside React state: mousemove/scroll fire constantly
+      // and previously re-rendered every subscribed component.
+      lastActivityAt = Date.now();
       const { isLocked } = get();
-      if (!isLocked) {
+      if (!isLocked && Date.now() - lastTimerRestartAt > 15_000) {
+        lastTimerRestartAt = Date.now();
         startAutoLockTimer();
       }
     }

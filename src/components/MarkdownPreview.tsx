@@ -8,10 +8,52 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Clipboard, Check } from 'lucide-react';
 import { useToastStore } from '../stores/useToastStore';
+import { titleFromHref, wikiLinkToMarkdown } from '../utils/links';
+import { attachmentIdFromMarkdown, getAttachmentObjectUrl } from '../utils/attachments';
+import { useVaultStore } from '../stores/useVaultStore';
 
 interface MarkdownPreviewProps {
   content: string;
   onContentChange?: (newContent: string) => void;
+  /** Called when the reader follows a [[wiki link]] to another note. */
+  onOpenNote?: (title: string) => void;
+}
+
+// Images pasted into a note live in IndexedDB, not at a URL. They are read
+// (and decrypted when needed) on demand and rendered from an object URL.
+function AttachmentImage({ id, alt }: { id: string; alt?: string }) {
+  const [url, setUrl] = React.useState<string | null>(null);
+  const [failed, setFailed] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    getAttachmentObjectUrl(id, useVaultStore.getState().derivedKey)
+      .then((resolved) => {
+        if (cancelled) return;
+        if (resolved) setUrl(resolved);
+        else setFailed(true);
+      })
+      .catch(() => !cancelled && setFailed(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  if (!url) {
+    return (
+      <span className="block my-4 mx-auto max-w-full rounded border border-dashed border-stone-300 dark:border-stone-800 px-3 py-6 text-center text-[11px] text-stone-400">
+        {failed ? 'Image unavailable — unlock the vault or re-attach it' : 'Loading image…'}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={url}
+      alt={alt || 'attachment'}
+      className="max-w-full rounded border border-stone-200 dark:border-stone-800 mx-auto my-5"
+    />
+  );
 }
 
 // A highly interactive copy button showing a "Copied" checkmark state for 2 seconds
@@ -62,8 +104,9 @@ const isRtlText = (text: string): boolean => {
   return /[\u0600-\u06FF]/.test(text);
 };
 
-export default function MarkdownPreview({ content, onContentChange }: MarkdownPreviewProps) {
+export default function MarkdownPreview({ content, onContentChange, onOpenNote }: MarkdownPreviewProps) {
   const { showToast } = useToastStore();
+  const renderedContent = React.useMemo(() => wikiLinkToMarkdown(content), [content]);
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -193,7 +236,7 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
         const lang = match ? match[1] : '';
 
         return (
-          <div className="relative group/code my-4 rounded border border-stone-250/50 dark:border-stone-850 overflow-hidden bg-[#F2F3F8]/40 dark:bg-[#222328]/20 text-xs select-text">
+          <div className="relative group/code my-4 rounded border border-stone-300/50 dark:border-stone-800 overflow-hidden bg-[#F2F3F8]/40 dark:bg-[#222328]/20 text-xs select-text">
             {lang && (
               <span className="absolute top-2.5 left-3.5 text-[9px] font-mono uppercase tracking-widest text-stone-400 dark:text-stone-500 select-none pointer-events-none opacity-60">
                 {lang}
@@ -208,7 +251,7 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
       }
 
       return (
-        <pre className="p-4 rounded my-4 overflow-x-auto bg-[#F2F3F8]/40 dark:bg-[#222328]/20 border border-stone-250/50 dark:border-stone-850 text-left [direction:ltr] select-text font-mono text-xs">
+        <pre className="p-4 rounded my-4 overflow-x-auto bg-[#F2F3F8]/40 dark:bg-[#222328]/20 border border-stone-300/50 dark:border-stone-800 text-left [direction:ltr] select-text font-mono text-xs">
           {children}
         </pre>
       );
@@ -254,7 +297,7 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
       </tbody>
     ),
     tr: ({ children }: any) => (
-      <tr className="even:bg-stone-100/30 dark:even:bg-[#222328]/30 hover:bg-stone-100/50 dark:hover:bg-stone-850/20 transition-colors">
+      <tr className="even:bg-stone-100/30 dark:even:bg-[#222328]/30 hover:bg-stone-100/50 dark:hover:bg-stone-800/20 transition-colors">
         {children}
       </tr>
     ),
@@ -268,14 +311,46 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
         {children}
       </td>
     ),
-    img: ({ src, alt }: any) => (
-      <img 
-        src={src} 
-        alt={alt} 
-        referrerPolicy="no-referrer"
-        className="max-w-full rounded border border-stone-200 dark:border-stone-800 mx-auto my-5" 
-      />
-    ),
+    a: ({ href, children, ...props }: any) => {
+      const linkedTitle = href ? titleFromHref(href) : null;
+      if (linkedTitle) {
+        return (
+          <a
+            href="#"
+            onClick={(event) => {
+              event.preventDefault();
+              onOpenNote?.(linkedTitle);
+            }}
+            className="text-[#1D2EA0] dark:text-[#A3B5F5] underline decoration-dotted underline-offset-2 hover:decoration-solid cursor-pointer"
+          >
+            {children}
+          </a>
+        );
+      }
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-[#1D2EA0] dark:text-[#A3B5F5] underline decoration-dotted underline-offset-2 hover:decoration-solid"
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    },
+    img: ({ src, alt }: any) => {
+      const attachmentId = typeof src === 'string' ? attachmentIdFromMarkdown(src) : null;
+      if (attachmentId) return <AttachmentImage id={attachmentId} alt={alt} />;
+      return (
+        <img
+          src={src}
+          alt={alt}
+          referrerPolicy="no-referrer"
+          className="max-w-full rounded border border-stone-200 dark:border-stone-800 mx-auto my-5"
+        />
+      );
+    },
     ul: ({ children }: any) => {
       const text = getTextFromChildren(children);
       const rtl = isRtlText(text);
@@ -299,7 +374,7 @@ export default function MarkdownPreview({ content, onContentChange }: MarkdownPr
   return (
     <div className="markdown-body select-text text-stone-800 dark:text-stone-200 pb-16 max-w-3xl mx-auto break-words font-serif">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components as any}>
-        {content || '*No content available. Click to write in the editor...*'}
+        {renderedContent || '*No content available. Click to write in the editor...*'}
       </ReactMarkdown>
     </div>
   );

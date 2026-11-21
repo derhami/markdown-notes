@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Folder, Tag, Star, Pin, Trash2, Edit3, Copy, Download, Share2, 
-  Info, Archive, AlertTriangle, FileText, Check, X, Clipboard,
+  Info, Archive, AlertTriangle, FileText, Check, X, Clipboard, Wand2,
   Plus, Undo, FolderClosed
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -15,6 +15,7 @@ import { useNoteActionsStore } from '../stores/useNoteActionsStore';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { useToastStore } from '../stores/useToastStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
+import { useVaultStore } from '../stores/useVaultStore';
 import {
   calculateWordCount, calculateCharacterCount, calculateReadingTime, 
   stringifyFrontmatter, sanitizeFileName 
@@ -31,9 +32,10 @@ export default function NoteActionManager() {
     setOpenTagsModal, setOpenDeleteConfirmModal, setOpenInfoModal
   } = useNoteActionsStore();
 
-  const { activeNoteId, setActiveNoteId, setActiveCategory } = useWorkspaceStore();
+  const { activeNoteId, setActiveNoteId, setActiveCategory, setSmartPanelOpen } = useWorkspaceStore();
   const { showToast } = useToastStore();
   const { settings } = useSettingsStore();
+  const { decryptedNotes, updateSecureNoteContent } = useVaultStore();
 
   // Load the selected note dynamically
   const note = useLiveQuery(
@@ -59,6 +61,15 @@ export default function NoteActionManager() {
   }, [note?.id]);
 
   if (!note) return null;
+
+  // Secure notes keep their real title/content/tags only in the unlocked cache.
+  const plain = note.isEncrypted ? decryptedNotes[note.id] : null;
+  const isSecureLocked = !!note.isEncrypted && !plain;
+  const displayTitle = note.isEncrypted
+    ? plain?.title || 'Locked Note'
+    : note.title || 'Untitled Document';
+  const displayContent = note.isEncrypted ? plain?.content || '' : note.content || '';
+  const displayTags = note.isEncrypted ? plain?.tags || [] : note.tags || [];
 
   // Master Note Actions implementation
   const handleToggleFavorite = async () => {
@@ -116,15 +127,42 @@ export default function NoteActionManager() {
     try {
       const now = Date.now();
       const duplicateId = generateId();
-      const duplicatedNote: Note = {
-        ...note,
-        id: duplicateId,
-        title: note.title ? `${note.title} (Duplicate)` : 'Untitled Duplicate',
-        createdAt: now,
-        updatedAt: now,
-        isPinned: false
-      };
-      await db.notes.add(duplicatedNote);
+
+      if (note.isEncrypted) {
+        if (!plain) {
+          showToast('Unlock the vault to duplicate a secure note', 'error');
+          return;
+        }
+        await db.notes.add({
+          ...note,
+          id: duplicateId,
+          title: 'Locked Note',
+          content: '',
+          tags: [],
+          encryptedContent: undefined,
+          encryptionIv: undefined,
+          createdAt: now,
+          updatedAt: now,
+          isPinned: false
+        });
+        await updateSecureNoteContent(
+          duplicateId,
+          `${plain.title || 'Untitled'} (Duplicate)`,
+          plain.content,
+          plain.tags
+        );
+      } else {
+        const duplicatedNote: Note = {
+          ...note,
+          id: duplicateId,
+          title: note.title ? `${note.title} (Duplicate)` : 'Untitled Duplicate',
+          createdAt: now,
+          updatedAt: now,
+          isPinned: false
+        };
+        await db.notes.add(duplicatedNote);
+      }
+
       showToast('Document duplicated', 'success');
       setActiveNoteId(duplicateId);
       closeAll();
@@ -137,10 +175,24 @@ export default function NoteActionManager() {
     e.preventDefault();
     const finalTitle = renameTitle.trim();
     try {
-      await db.notes.update(note.id, { 
-        title: finalTitle || 'Untitled Document',
-        updatedAt: Date.now()
-      });
+      if (note.isEncrypted) {
+        if (!plain) {
+          showToast('Unlock the vault to rename a secure note', 'error');
+          return;
+        }
+        // Secure titles must stay inside the encrypted payload.
+        await updateSecureNoteContent(
+          note.id,
+          finalTitle || plain.title,
+          plain.content,
+          plain.tags
+        );
+      } else {
+        await db.notes.update(note.id, {
+          title: finalTitle || 'Untitled Document',
+          updatedAt: Date.now()
+        });
+      }
       showToast('Document renamed', 'success');
       closeAll();
     } catch (err) {
@@ -154,16 +206,44 @@ export default function NoteActionManager() {
     try {
       const now = Date.now();
       const saveAsId = generateId();
-      const savedAsNote: Note = {
-        ...note,
-        id: saveAsId,
-        title: finalTitle || 'Untitled Document',
-        createdAt: now,
-        updatedAt: now,
-        isPinned: false,
-        isFavorite: false
-      };
-      await db.notes.add(savedAsNote);
+
+      if (note.isEncrypted) {
+        if (!plain) {
+          showToast('Unlock the vault to save a copy of a secure note', 'error');
+          return;
+        }
+        await db.notes.add({
+          ...note,
+          id: saveAsId,
+          title: 'Locked Note',
+          content: '',
+          tags: [],
+          encryptedContent: undefined,
+          encryptionIv: undefined,
+          createdAt: now,
+          updatedAt: now,
+          isPinned: false,
+          isFavorite: false
+        });
+        await updateSecureNoteContent(
+          saveAsId,
+          finalTitle || plain.title || 'Untitled Document',
+          plain.content,
+          plain.tags
+        );
+      } else {
+        const savedAsNote: Note = {
+          ...note,
+          id: saveAsId,
+          title: finalTitle || 'Untitled Document',
+          createdAt: now,
+          updatedAt: now,
+          isPinned: false,
+          isFavorite: false
+        };
+        await db.notes.add(savedAsNote);
+      }
+
       showToast(`Saved as "${finalTitle || 'Untitled'}"`, 'success');
       setActiveNoteId(saveAsId);
       closeAll();
@@ -187,6 +267,10 @@ export default function NoteActionManager() {
     e.preventDefault();
     const cleanTag = tagInput.trim().toLowerCase().replace(/#/g, '');
     if (!cleanTag) return;
+    if (isSecureLocked) {
+      showToast('Unlock the vault to edit tags on a secure note', 'error');
+      return;
+    }
 
     try {
       // Add tag to the database tags dictionary if it does not exist
@@ -200,11 +284,15 @@ export default function NoteActionManager() {
         });
       }
 
-      // Append tag to note
-      const currentTags = note.tags || [];
+      // Append tag to note (inside the encrypted payload for secure notes)
+      const currentTags = displayTags;
       if (!currentTags.includes(cleanTag)) {
         const updatedTags = [...currentTags, cleanTag];
-        await db.notes.update(note.id, { tags: updatedTags, updatedAt: Date.now() });
+        if (note.isEncrypted && plain) {
+          await updateSecureNoteContent(note.id, plain.title, plain.content, updatedTags);
+        } else {
+          await db.notes.update(note.id, { tags: updatedTags, updatedAt: Date.now() });
+        }
         showToast(`Tag #${cleanTag} added`, 'success');
       } else {
         showToast('Tag already exists on this note', 'info');
@@ -216,9 +304,17 @@ export default function NoteActionManager() {
   };
 
   const handleRemoveTag = async (tagName: string) => {
+    if (isSecureLocked) {
+      showToast('Unlock the vault to edit tags on a secure note', 'error');
+      return;
+    }
     try {
-      const updatedTags = (note.tags || []).filter(t => t !== tagName);
-      await db.notes.update(note.id, { tags: updatedTags, updatedAt: Date.now() });
+      const updatedTags = displayTags.filter(t => t !== tagName);
+      if (note.isEncrypted && plain) {
+        await updateSecureNoteContent(note.id, plain.title, plain.content, updatedTags);
+      } else {
+        await db.notes.update(note.id, { tags: updatedTags, updatedAt: Date.now() });
+      }
       showToast(`Removed tag #${tagName}`, 'info');
     } catch (err) {
       console.error(err);
@@ -239,7 +335,11 @@ export default function NoteActionManager() {
   };
 
   const handleCopyMarkdown = async () => {
-    const rawContent = note.content || '';
+    if (isSecureLocked) {
+      showToast('Unlock the vault to copy this note', 'error');
+      return;
+    }
+    const rawContent = displayContent;
     const success = await copyToClipboard(rawContent);
     if (success) {
       showToast('Markdown content copied to clipboard', 'success');
@@ -250,14 +350,18 @@ export default function NoteActionManager() {
   };
 
   const handleExportMarkdownFile = () => {
+    if (isSecureLocked) {
+      showToast('Unlock the vault to export this note', 'error');
+      return;
+    }
     const metadata = {
-      title: note.title || 'Untitled Document',
-      tags: note.tags || [],
+      title: displayTitle,
+      tags: displayTags,
       created: new Date(note.createdAt).toISOString(),
       updated: new Date(note.updatedAt).toISOString()
     };
-    const fileContent = stringifyFrontmatter(note.content || '', metadata);
-    const fileName = `${sanitizeFileName(note.title || 'Untitled Document')}.md`;
+    const fileContent = stringifyFrontmatter(displayContent, metadata);
+    const fileName = `${sanitizeFileName(displayTitle)}.md`;
     const blob = new Blob([fileContent], { type: 'text/markdown;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -268,28 +372,30 @@ export default function NoteActionManager() {
   };
 
   const handleShareNote = async () => {
-    const shareUrl = `${window.location.origin}/?note=${note.id}`;
-    
-    // Check for standard Web Share API support
+    if (isSecureLocked) {
+      showToast('Unlock the vault to share this note', 'error');
+      return;
+    }
+
+    // Notes are local-only, so sharing means sharing the actual text, not a URL.
+    const shareText = `${displayTitle}\n\n${displayContent}`.slice(0, 12_000);
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: note.title || 'Untitled Document',
-          text: `Check out this markdown note: ${note.title || 'Untitled'}`,
-          url: shareUrl
-        });
+        await navigator.share({ title: displayTitle, text: shareText });
         showToast('Shared successfully', 'success');
         closeAll();
         return;
       } catch (err) {
-        // Fallback to clipboard if share cancelled/errored
+        // Fall through to clipboard when the user cancels or sharing is blocked.
       }
     }
 
-    const copied = await copyToClipboard(shareUrl);
-    if (copied) {
-      showToast('Note share link copied to clipboard', 'success');
-    }
+    const copied = await copyToClipboard(shareText);
+    showToast(
+      copied ? 'Note text copied to clipboard' : 'Unable to share this note',
+      copied ? 'success' : 'error'
+    );
     closeAll();
   };
 
@@ -327,9 +433,9 @@ export default function NoteActionManager() {
   };
 
   // Stats
-  const wordCount = calculateWordCount(note.content || '');
-  const charCount = calculateCharacterCount(note.content || '');
-  const readingTime = calculateReadingTime(note.content || '');
+  const wordCount = calculateWordCount(displayContent);
+  const charCount = calculateCharacterCount(displayContent);
+  const readingTime = calculateReadingTime(displayContent);
 
   return (
     <>
@@ -343,14 +449,14 @@ export default function NoteActionManager() {
           />
 
           {/* Action sheet card sliding up from bottom */}
-          <div className="relative w-full max-w-md bg-white dark:bg-[#1A1B1E] border-t border-[#D1D4DC] dark:border-[#2E3039] rounded-t-lg shadow-2xl flex flex-col z-10 animate-slide-up">
+          <div className="relative w-full max-w-md max-h-[88dvh] bg-white dark:bg-[#1A1B1E] border-t border-[#D1D4DC] dark:border-[#2E3039] rounded-t-lg shadow-2xl flex flex-col z-10 animate-slide-up">
             
             {/* Header / Info Handle */}
             <div className="w-full flex flex-col items-center pt-2.5 pb-3 border-b border-stone-100 dark:border-[#2E3039] shrink-0">
               <div className="w-10 h-1 bg-stone-200 dark:bg-stone-800 rounded-full mb-2.5 shrink-0" />
               <div className="px-6 text-center max-w-xs">
                 <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 font-serif truncate">
-                  {note.title || 'Untitled Document'}
+                  {displayTitle}
                 </h4>
                 <p className="text-[9px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1">
                   {wordCount} words · {charCount} chars · {readingTime} min read
@@ -366,7 +472,7 @@ export default function NoteActionManager() {
                 className={`flex flex-col items-center justify-center gap-1 py-1.5 rounded transition-all cursor-pointer ${
                   note.isPinned 
                     ? 'bg-[#1D2EA0]/10 dark:bg-[#A3B5F5]/10 text-[#1D2EA0] dark:text-[#A3B5F5]' 
-                    : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100/50 dark:hover:bg-stone-850/50'
+                    : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100/50 dark:hover:bg-stone-800/50'
                 }`}
               >
                 <Pin className={`w-3.5 h-3.5 ${note.isPinned ? 'fill-current' : ''}`} />
@@ -379,7 +485,7 @@ export default function NoteActionManager() {
                 className={`flex flex-col items-center justify-center gap-1 py-1.5 rounded transition-all cursor-pointer ${
                   note.isFavorite 
                     ? 'bg-amber-500/10 dark:bg-amber-500/10 text-amber-500' 
-                    : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100/50 dark:hover:bg-stone-850/50'
+                    : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100/50 dark:hover:bg-stone-800/50'
                 }`}
               >
                 <Star className={`w-3.5 h-3.5 ${note.isFavorite ? 'fill-current' : ''}`} />
@@ -392,7 +498,7 @@ export default function NoteActionManager() {
                 className={`flex flex-col items-center justify-center gap-1 py-1.5 rounded transition-all cursor-pointer ${
                   note.isArchived 
                     ? 'bg-emerald-500/10 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-                    : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100/50 dark:hover:bg-stone-850/50'
+                    : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100/50 dark:hover:bg-stone-800/50'
                 }`}
               >
                 <Archive className={`w-3.5 h-3.5 ${note.isArchived ? 'fill-current' : ''}`} />
@@ -410,7 +516,7 @@ export default function NoteActionManager() {
             </div>
 
             {/* List of scrollable primary action items */}
-            <div className="overflow-y-auto px-3 py-1.5 flex flex-col gap-0.5 text-xs font-semibold max-h-[45vh]">
+            <div className="overflow-y-auto px-3 py-1.5 flex flex-col gap-0.5 text-xs font-semibold max-h-[40dvh]">
               
               {activeNoteId !== note.id && (
                 <button
@@ -512,7 +618,7 @@ export default function NoteActionManager() {
             </div>
 
             {/* Share & Export compact grid */}
-            <div className="grid grid-cols-3 gap-1 px-4 py-2 bg-stone-50/50 dark:bg-[#222328]/20 border-t border-stone-100 dark:border-[#2E3039] shrink-0 text-[10px] font-bold text-center">
+            <div className="grid grid-cols-4 gap-1 px-4 py-2 bg-stone-50/50 dark:bg-[#222328]/20 border-t border-stone-100 dark:border-[#2E3039] shrink-0 text-[10px] font-bold text-center">
               <button
                 type="button"
                 onClick={handleCopyMarkdown}
@@ -537,12 +643,24 @@ export default function NoteActionManager() {
                 className="flex flex-col items-center justify-center gap-1 py-1 text-stone-600 hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-100 rounded hover:bg-stone-100/40 dark:hover:bg-[#2E3039]/40 transition-all cursor-pointer"
               >
                 <Share2 className="w-4 h-4 text-stone-400" />
-                <span>Share Link</span>
+                <span>Share Text</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  closeAll();
+                  setSmartPanelOpen(true);
+                }}
+                className="flex flex-col items-center justify-center gap-1 py-1 text-stone-600 hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-100 rounded hover:bg-stone-100/40 dark:hover:bg-[#2E3039]/40 transition-all cursor-pointer"
+              >
+                <Wand2 className="w-4 h-4 text-stone-400" />
+                <span>Assistant</span>
               </button>
             </div>
 
             {/* Cancel Bottom Sheet Area */}
-            <div className="p-3 border-t border-stone-100 dark:border-[#2E3039] flex items-center justify-center shrink-0">
+            <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-stone-100 dark:border-[#2E3039] flex items-center justify-center shrink-0">
               <button
                 type="button"
                 onClick={closeAll}
@@ -642,7 +760,7 @@ export default function NoteActionManager() {
         onClose={closeAll}
         title="Move to Folder"
       >
-        <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
+        <div className="flex flex-col gap-3 max-h-[55dvh] overflow-y-auto">
           <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-1">
             Choose Destination
           </span>
@@ -711,13 +829,13 @@ export default function NoteActionManager() {
           {/* Active Tags */}
           <div className="flex flex-col gap-2 mt-2">
             <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Active Tags on Document</span>
-            {(!note.tags || note.tags.length === 0) ? (
+            {displayTags.length === 0 ? (
               <span className="text-xs text-stone-400 dark:text-stone-500 italic block py-2">
                 No tags associated with this document.
               </span>
             ) : (
               <div className="flex flex-wrap gap-1.5">
-                {note.tags.map((tg, idx) => (
+                {displayTags.map((tg, idx) => (
                   <span 
                     key={idx} 
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#1D2EA0]/10 border border-stone-200 dark:border-stone-800 text-[10px] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold"
@@ -738,22 +856,29 @@ export default function NoteActionManager() {
 
           {/* Recommended Available Tags */}
           {tags.length > 0 && (
-            <div className="flex flex-col gap-2 mt-2 border-t border-stone-100 dark:border-stone-850 pt-4">
+            <div className="flex flex-col gap-2 mt-2 border-t border-stone-100 dark:border-stone-800 pt-4">
               <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Library Tags</span>
               <div className="flex flex-wrap gap-1.5">
                 {tags
-                  .filter(t => !note.tags?.includes(t.name))
+                  .filter(t => !displayTags.includes(t.name))
                   .map((t) => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={async () => {
-                        const currentTags = note.tags || [];
-                        const updated = [...currentTags, t.name];
-                        await db.notes.update(note.id, { tags: updated, updatedAt: Date.now() });
+                        if (isSecureLocked) {
+                          showToast('Unlock the vault to edit tags on a secure note', 'error');
+                          return;
+                        }
+                        const updated = [...displayTags, t.name];
+                        if (note.isEncrypted && plain) {
+                          await updateSecureNoteContent(note.id, plain.title, plain.content, updated);
+                        } else {
+                          await db.notes.update(note.id, { tags: updated, updatedAt: Date.now() });
+                        }
                         showToast(`Tag #${t.name} added`, 'success');
                       }}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-sm bg-stone-100 hover:bg-stone-200 dark:bg-stone-900 dark:hover:bg-stone-850 border border-stone-200/50 dark:border-stone-800 text-[10px] text-stone-500 dark:text-stone-400 font-semibold cursor-pointer transition-colors"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-sm bg-stone-100 hover:bg-stone-200 dark:bg-stone-900 dark:hover:bg-stone-800 border border-stone-200/50 dark:border-stone-800 text-[10px] text-stone-500 dark:text-stone-400 font-semibold cursor-pointer transition-colors"
                     >
                       <Plus className="w-3 h-3 text-stone-400" />
                       <span>#{t.name}</span>
@@ -763,7 +888,7 @@ export default function NoteActionManager() {
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2 mt-4 border-t border-stone-100 dark:border-stone-850 pt-3">
+          <div className="flex items-center justify-end gap-2 mt-4 border-t border-stone-100 dark:border-stone-800 pt-3">
             <button
               type="button"
               onClick={closeAll}
@@ -787,7 +912,7 @@ export default function NoteActionManager() {
             <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
             <div className="text-xs font-semibold leading-relaxed">
               <p className="font-bold mb-1">This operation is permanent and cannot be undone.</p>
-              <p>The file content, tags, metadata, and history for "{note.title || 'Untitled Document'}" will be deleted completely from your IndexedDB local database storage.</p>
+              <p>The file content, tags, metadata, and history for "{displayTitle}" will be deleted completely from your IndexedDB local database storage.</p>
             </div>
           </div>
 
@@ -820,14 +945,14 @@ export default function NoteActionManager() {
       >
         <div className="flex flex-col gap-4 text-xs font-semibold">
           
-          <div className="flex flex-col gap-2.5 bg-stone-50 dark:bg-stone-900/40 p-4 rounded-sm border border-stone-200/50 dark:border-stone-850">
+          <div className="flex flex-col gap-2.5 bg-stone-50 dark:bg-stone-900/40 p-4 rounded-sm border border-stone-200/50 dark:border-stone-800">
             <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
               <span className="text-stone-400">Document ID</span>
               <span className="font-mono text-[11px] text-stone-600 dark:text-stone-400 select-all">{note.id}</span>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
               <span className="text-stone-400">Document Name</span>
-              <span className="text-stone-800 dark:text-stone-200 truncate max-w-[200px]">{note.title || 'Untitled'}</span>
+              <span className="text-stone-800 dark:text-stone-200 truncate max-w-[200px]">{displayTitle}</span>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
               <span className="text-stone-400">Folder Path</span>
@@ -845,7 +970,7 @@ export default function NoteActionManager() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 bg-stone-50 dark:bg-stone-900/40 p-4 rounded-sm border border-stone-200/50 dark:border-stone-850">
+          <div className="flex flex-col gap-2.5 bg-stone-50 dark:bg-stone-900/40 p-4 rounded-sm border border-stone-200/50 dark:border-stone-800">
             <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
               <span className="text-stone-400">Word Count</span>
               <span className="font-mono font-bold text-stone-800 dark:text-stone-200">{wordCount}</span>

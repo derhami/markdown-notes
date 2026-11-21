@@ -79,3 +79,103 @@ html, body, button, input, textarea, select, option, kbd, code, pre {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* ------------------------------------------------------------------
+   Device & viewport hardening
+   ------------------------------------------------------------------ */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* The shell uses the dynamic viewport height so mobile browser chrome and
+   the on-screen keyboard never crop the layout (with a 100vh fallback). */
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  /* Installed apps should feel pinned, not like a scrolling web page. */
+  overscroll-behavior: none;
+}
+
+/* Native-feeling touch behaviour: no 300ms delay, no accidental zoom on
+   double taps, and a subtle press state instead of a hover wash. */
+button,
+[role='button'],
+label[for],
+a {
+  touch-action: manipulation;
+}
+
+.mobile-tabs button {
+  transition: transform 120ms ease, color 120ms ease;
+}
+
+.mobile-tabs button:active {
+  transform: scale(0.92);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+/* iOS Safari auto-zooms any focused field below 16px, which shoves the
+   layout sideways while typing. Keep form controls readable on phones. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Safe-area helpers for installed PWAs / notched devices. */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Hover-only controls must stay reachable on touch devices. */
+.hover-actions {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-actions {
+    opacity: 0;
+  }
+  .group:hover .hover-actions,
+  .group:focus-within .hover-actions {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible keyboard focus everywhere, without disturbing pointer users. */
+:where(button, a, [role='button'], input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid #1D2EA0;
+  outline-offset: 2px;
+}
+
+.dark :where(button, a, [role='button'], input, textarea, select, summary, [tabindex]):focus-visible {
+  outline-color: #A3B5F5;
+}

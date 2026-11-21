@@ -7,9 +7,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import { 
   Heading, Bold, Italic, Link, Quote, List, ListOrdered, CheckSquare, 
   Code, Table, Image, Minus, Eye, EyeOff, LayoutGrid, 
-  Maximize2, Minimize2, CloudLightning, HardDriveDownload, Sparkles,
+  Maximize2, Minimize2, CloudLightning, HardDriveDownload, Sparkles, Wand2,
   PanelLeft, ChevronLeft, BookOpen, Info, Calendar, Tag, FileText,
-  RotateCcw, RotateCw, MoreVertical, Lock, Unlock, Shield, Edit3
+  RotateCcw, RotateCw, MoreVertical, Lock, Unlock, Shield, Edit3,
+  History as HistoryIcon, Link2
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
@@ -20,8 +21,12 @@ import { useNoteActionsStore } from '../stores/useNoteActionsStore';
 import { useVaultStore } from '../stores/useVaultStore';
 import { 
   calculateWordCount, calculateCharacterCount, calculateReadingTime, 
-  extractFirstHeading, sanitizeFileName, stringifyFrontmatter 
+  extractFirstHeading, sanitizeFileName, stringifyFrontmatter, normalizeText 
 } from '../utils/notesHelper';
+import { recordNoteVersion } from '../utils/versions';
+import { saveAttachment } from '../utils/attachments';
+import NoteHistory from './NoteHistory';
+import LinksPanel from './LinksPanel';
 import MarkdownPreview from './MarkdownPreview';
 import Modal from './Modal';
 import type { Note, Folder } from '../types';
@@ -50,6 +55,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
   const { 
     focusMode, setFocusMode, zenMode, setZenMode, activeCategory,
     tocOpen, setTocOpen, sidebarOpen, setSidebarOpen, setActiveNoteId,
+    setSmartPanelOpen,
     showUnsavedModal, confirmNavigation, cancelNavigation
   } = useWorkspaceStore();
   const { showToast } = useToastStore();
@@ -73,6 +79,8 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'draft'>('saved');
   const [showSavedBriefly, setShowSavedBriefly] = useState(false);
   const [showToolbar, setShowToolbar] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showLinks, setShowLinks] = useState(false);
   const [rightPanelTab, setRightPanelTab] = useState<'outline' | 'info'>('outline');
 
   // Online status tracking
@@ -88,10 +96,16 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
     };
   }, []);
 
+  // Secure notes keep their plaintext only in the vault cache; comparing against
+  // the locked row would make the editor look permanently dirty.
+  const securePlain = note?.isEncrypted ? decryptedNotes[note.id] : undefined;
+  const baseContent = note?.isEncrypted ? securePlain?.content || '' : note?.content || '';
+  const baseTitle = note?.isEncrypted ? securePlain?.title || '' : note?.title || '';
+
   // Sync isDirty state with useWorkspaceStore for navigation blocking
-  const isDirty = localContent !== (note?.content || '') || localTitle !== (note?.title || '');
+  const isDirty = localContent !== baseContent || localTitle !== baseTitle;
   useEffect(() => {
-    useWorkspaceStore.setState({ isEditorDirty: isOnline && isDirty });
+    useWorkspaceStore.setState({ isEditorDirty: isDirty });
     return () => {
       useWorkspaceStore.setState({ isEditorDirty: false });
     };
@@ -111,25 +125,34 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
     }
 
     const handler = setTimeout(() => {
+      // Keep the updater pure: index bookkeeping happens in the effect below.
       setHistory(prev => {
         const sliced = prev.slice(0, historyIndex + 1);
         if (sliced[sliced.length - 1] === localContent) return prev;
-        const nextHist = [...sliced, localContent];
-        setHistoryIndex(nextHist.length - 1);
-        return nextHist;
+        return [...sliced, localContent].slice(-100);
       });
     }, 400);
 
     return () => clearTimeout(handler);
-  }, [localContent, noteId]);
+  }, [localContent, noteId, historyIndex]);
 
-  // Clear history on note change
+  // Follow the newest entry, but never move the cursor after undo/redo (which
+  // do not change the history array identity).
   useEffect(() => {
-    if (note) {
-      setHistory([note.content || '']);
-      setHistoryIndex(0);
-    }
-  }, [noteId]);
+    setHistoryIndex(prev => (prev < history.length - 1 ? history.length - 1 : prev));
+  }, [history]);
+
+  // Clear history on note change (the plaintext source differs for secure notes)
+  useEffect(() => {
+    if (!noteId) return;
+    const initial = note?.isEncrypted
+      ? isLocked
+        ? ''
+        : decryptedNotes[noteId]?.content || ''
+      : note?.content || '';
+    setHistory([initial]);
+    setHistoryIndex(0);
+  }, [noteId, isLocked]);
 
   const handleUndo = () => {
     if (historyIndex > 0) {
@@ -156,13 +179,29 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Device-aware state
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const isMobile = viewportWidth < 768;
+
+  // Side-by-side panes need room to stay readable; below this the editor
+  // degrades to a single pane with a reader toggle (phone, tablet, small laptop).
+  const canSplit = viewportWidth >= 1180;
+
+  const [narrowView, setNarrowView] = useState<'editor' | 'preview'>(
+    settings.editorMode === 'preview' ? 'preview' : 'editor'
+  );
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setViewportWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Follow layout changes made on a wide viewport.
+  useEffect(() => {
+    if (canSplit) {
+      setNarrowView(settings.editorMode === 'preview' ? 'preview' : 'editor');
+    }
+  }, [canSplit, settings.editorMode]);
 
   // Selection Floating Toolbar state
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; x: number; y: number } | null>(null);
@@ -195,14 +234,14 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      if (settings.editorMode !== 'split') {
+      if (!(canSplit && settings.editorMode === 'split')) {
         textarea.style.height = 'auto';
         textarea.style.height = `${textarea.scrollHeight}px`;
       } else {
         textarea.style.height = '';
       }
     }
-  }, [localContent, settings.editorMode]);
+  }, [localContent, settings.editorMode, canSplit]);
 
   // Detect mouse move to un-fade controls immediately
   useEffect(() => {
@@ -291,7 +330,13 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
         const readTime = calculateReadingTime(localContent);
 
         if (note.isEncrypted) {
-          await updateSecureNoteContent(noteId, finalTitle, localContent, note.tags);
+          // Tag metadata lives in the encrypted payload, not on the locked row.
+          await updateSecureNoteContent(
+            noteId,
+            finalTitle,
+            localContent,
+            decryptedNotes[noteId]?.tags || []
+          );
         } else {
           await db.notes.update(noteId, {
             title: finalTitle,
@@ -303,6 +348,11 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
           });
         }
 
+        const versionKey = note.isEncrypted ? useVaultStore.getState().derivedKey : null;
+        if (!note.isEncrypted || versionKey) {
+          void recordNoteVersion(noteId, finalTitle, localContent, versionKey).catch(() => {});
+        }
+
         setSaveStatus('saved');
       } catch (err) {
         console.error('Auto save failed:', err);
@@ -312,6 +362,26 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
 
     return () => clearTimeout(timeout);
   }, [localContent, localTitle, noteId, settings.autoSaveInterval, isLocked, decryptedNotes]);
+
+  const openNoteByTitle = async (targetTitle: string) => {
+    try {
+      const all = await db.notes.toArray();
+      const match = all.find(
+        (candidate) =>
+          !candidate.deletedAt &&
+          normalizeText(decryptedNotes[candidate.id]?.title || candidate.title) === normalizeText(targetTitle)
+      );
+      if (match) {
+        setShowLinks(false);
+        setActiveNoteId(match.id);
+      } else {
+        showToast(`No note titled "${targetTitle}" yet`, 'info');
+      }
+    } catch (error) {
+      console.error('Could not open linked note', error);
+      showToast('Could not open that note', 'error');
+    }
+  };
 
   const triggerImmediateSave = async () => {
     if (!noteId || !note) return;
@@ -332,7 +402,12 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
           showToast('Cannot save locked note', 'error');
           return;
         }
-        await updateSecureNoteContent(noteId, finalTitle, localContent, note.tags);
+        await updateSecureNoteContent(
+          noteId,
+          finalTitle,
+          localContent,
+          decryptedNotes[noteId]?.tags || []
+        );
       } else {
         await db.notes.update(noteId, {
           title: finalTitle,
@@ -343,13 +418,88 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
           updatedAt: now
         });
       }
-      
+      const versionKey = note.isEncrypted ? useVaultStore.getState().derivedKey : null;
+      if (!note.isEncrypted || versionKey) {
+        void recordNoteVersion(noteId, finalTitle, localContent, versionKey).catch(() => {});
+      }
+
       setSaveStatus('saved');
       showToast('Document saved', 'success');
     } catch (err) {
       console.error(err);
       setSaveStatus('draft');
     }
+  };
+
+  // Mobile browsers can freeze or kill a tab while it is hidden. Flush whatever
+  // is still waiting in the debounce window before that happens.
+  const persistOnHideRef = useRef(triggerImmediateSave);
+  persistOnHideRef.current = triggerImmediateSave;
+  const saveStatusRef = useRef(saveStatus);
+  saveStatusRef.current = saveStatus;
+
+  useEffect(() => {
+    if (!noteId) return;
+    const flush = () => {
+      if (saveStatusRef.current === 'saved') return;
+      persistOnHideRef.current();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [noteId]);
+
+  /** Pasted or dropped images become local attachments instead of data URLs. */
+  const insertAttachmentFiles = async (files: File[]) => {
+    if (!noteId || files.length === 0) return;
+    const vaultKey = note?.isEncrypted ? useVaultStore.getState().derivedKey : null;
+    if (note?.isEncrypted && !vaultKey) {
+      showToast('Unlock the vault to attach files to this note', 'error');
+      return;
+    }
+
+    const snippets: string[] = [];
+    for (const file of files) {
+      try {
+        snippets.push(await saveAttachment(noteId, file, file.name, vaultKey));
+      } catch (error) {
+        console.error('Attachment failed', error);
+        showToast(`Could not attach ${file.name}`, 'error');
+      }
+    }
+    if (snippets.length === 0) return;
+
+    const block = `\n${snippets.join('\n')}\n`;
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? localContent.length;
+    const end = textarea?.selectionEnd ?? localContent.length;
+    setLocalContent((previous) => previous.slice(0, start) + block + previous.slice(end));
+    showToast(snippets.length === 1 ? 'Image attached' : `${snippets.length} images attached`, 'success');
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const images = Array.from(event.clipboardData.files).filter((file) =>
+      file.type.startsWith('image/')
+    );
+    if (images.length === 0) return;
+    event.preventDefault();
+    void insertAttachmentFiles(images);
+  };
+
+  const handleImageDrop = (event: React.DragEvent<HTMLTextAreaElement>) => {
+    const images = Array.from(event.dataTransfer.files).filter((file) =>
+      file.type.startsWith('image/')
+    );
+    if (images.length === 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    void insertAttachmentFiles(images);
   };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -516,7 +666,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
     return (
       <div className="flex-1 h-full flex flex-col items-center justify-center bg-[#F2F3F8] dark:bg-[#111214] px-6 select-none animate-fade-in">
         <div className="max-w-xs w-full flex flex-col items-center text-center gap-4 py-8 px-6 bg-white dark:bg-[#1A1B1E] border border-stone-200/65 dark:border-[#2E3039] shadow-sm rounded-sm">
-          <div className="p-3 bg-stone-50 dark:bg-[#222328] border border-stone-150 dark:border-[#2E3039] text-amber-500 rounded-sm">
+          <div className="p-3 bg-stone-50 dark:bg-[#222328] border border-stone-200 dark:border-[#2E3039] text-amber-500 rounded-sm">
             <Lock className="w-5 h-5 animate-pulse" />
           </div>
           <div>
@@ -542,7 +692,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               type="password"
               name="vault_editor_pass"
               placeholder="Vault Password"
-              className="w-full py-2 px-3 border border-stone-200 dark:border-[#2E3039] bg-[#F2F3F8] dark:bg-[#111214] text-stone-850 dark:text-stone-100 rounded-sm text-xs outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
+              className="w-full py-2 px-3 border border-stone-200 dark:border-[#2E3039] bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 rounded-sm text-xs outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
               autoFocus
             />
             <button
@@ -557,9 +707,14 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
     );
   }
 
-  const isSplitMode = settings.editorMode === 'split';
-  const isPreviewOnly = settings.editorMode === 'preview';
-  const isEditorOnly = settings.editorMode === 'editor';
+  const tocOverlay = viewportWidth < 1280;
+
+  const effectiveMode: 'editor' | 'split' | 'preview' = canSplit
+    ? settings.editorMode
+    : narrowView;
+  const isSplitMode = effectiveMode === 'split';
+  const isPreviewOnly = effectiveMode === 'preview';
+  const isEditorOnly = effectiveMode === 'editor';
 
   // Get active layout class width based on user choice
   const getWidthClass = (widthChoice?: 'focused' | 'comfortable' | 'wide') => {
@@ -606,7 +761,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               type="button"
               id="btn-mobile-back"
               onClick={() => setActiveNoteId(null)}
-              className="flex items-center gap-0.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 text-xs font-semibold cursor-pointer py-1 pe-1.5 -ms-1 rounded hover:bg-stone-150/50 dark:hover:bg-stone-850/60"
+              className="flex items-center gap-0.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 text-xs font-semibold cursor-pointer py-2 pe-1.5 -ms-1 rounded hover:bg-stone-200/50 dark:hover:bg-stone-800/60"
             >
               <ChevronLeft className="w-4.5 h-4.5" />
               <span>Back</span>
@@ -618,14 +773,19 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               id="btn-sidebar-toggle"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               title={sidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
-              className="p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-850/60 transition-colors cursor-pointer"
+              className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
             >
               <PanelLeft className="w-4 h-4" />
             </button>
           )}
 
           {/* Save status text */}
-          <div className="flex items-center gap-1.5 h-5 text-[10px] font-bold uppercase tracking-widest select-none ms-1">
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="flex items-center gap-1.5 h-5 text-[10px] font-bold uppercase tracking-widest select-none ms-1"
+          >
             {!isOnline ? (
               <span className="text-stone-400 dark:text-stone-500 flex items-center gap-1 bg-stone-100 dark:bg-stone-900 px-1.5 py-0.5 rounded-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-stone-500 animate-pulse" />
@@ -658,10 +818,46 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             id="btn-toggle-toolbar"
             onClick={() => setShowToolbar(!showToolbar)}
             title="Toggle Markdown Toolbar (Ctrl+/)"
-            className={`p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-850/60 transition-colors cursor-pointer
+            className={`p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer
               ${showToolbar ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : ''}`}
           >
             <Sparkles className="w-4 h-4" />
+          </button>
+
+          {/* Smart Assistant: summary, related notes, ask, insights */}
+          <button
+            type="button"
+            id="btn-smart-assistant"
+            onClick={() => setSmartPanelOpen(true)}
+            title="Smart Assistant (Ctrl+J)"
+            aria-label="Open Smart Assistant"
+            className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
+          >
+            <Wand2 className="w-4 h-4" />
+          </button>
+
+          {/* Connections: outgoing wiki links, backlinks and unlinked mentions */}
+          <button
+            type="button"
+            id="btn-links-panel"
+            onClick={() => setShowLinks(true)}
+            title="Connections"
+            aria-label="Open connections panel"
+            className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
+          >
+            <Link2 className="w-4 h-4" />
+          </button>
+
+          {/* Local version history */}
+          <button
+            type="button"
+            id="btn-note-history"
+            onClick={() => setShowHistory(true)}
+            title="Version History"
+            aria-label="Open version history"
+            className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
+          >
+            <HistoryIcon className="w-4 h-4" />
           </button>
 
           {/* Width Cycle button (Focused -> Comfortable -> Wide) - Standard Editorial toggle */}
@@ -677,7 +873,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                 showToast(`Layout changed to: ${nextWidth}`, 'info');
               }}
               title={`Cycle Document Width (${settings.editorWidth || 'comfortable'})`}
-              className="p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-850/60 transition-colors cursor-pointer"
+              className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
             >
               <FileText className="w-4 h-4" />
             </button>
@@ -690,7 +886,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               id="btn-editor-export"
               onClick={handleExportNoteFile}
               title="Export Note to Markdown File"
-              className="p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-850/60 transition-colors cursor-pointer"
+              className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
             >
               <HardDriveDownload className="w-4 h-4" />
             </button>
@@ -705,8 +901,8 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Focus Mode"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${focusMode 
-                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-850' 
-                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400'}`}
+                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-800' 
+                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400'}`}
             >
               <CloudLightning className="w-4 h-4" />
             </button>
@@ -721,8 +917,8 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Zen Mode (ESC to exit)"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${zenMode 
-                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-850' 
-                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400'}`}
+                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-800' 
+                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400'}`}
             >
               {zenMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
@@ -737,24 +933,21 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Outline & Metadata Panel"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${tocOpen 
-                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-850' 
-                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400'}`}
+                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-800' 
+                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400'}`}
             >
               <BookOpen className="w-4 h-4" />
             </button>
           )}
 
           {/* Single mobile toggle layout button OR Desktop multi-selectors */}
-          {isMobile ? (
+          {!canSplit ? (
             <button
               type="button"
               id="btn-mobile-layout-toggle"
-              onClick={() => {
-                const nextMode = isPreviewOnly ? 'editor' : 'preview';
-                updateSettings({ editorMode: nextMode });
-              }}
+              onClick={() => setNarrowView(isPreviewOnly ? 'editor' : 'preview')}
               title={isPreviewOnly ? "Switch to Editor View" : "Switch to Preview Reader"}
-              className="p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-850/60 transition-colors cursor-pointer"
+              className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
             >
               {isPreviewOnly ? (
                 <Edit3 className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
@@ -767,7 +960,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               <span className="w-px h-4 bg-stone-200 dark:bg-[#2E3039] mx-1" />
               
               {/* Layout Mode selectors */}
-              <div className="flex items-center bg-stone-150/60 dark:bg-stone-900 p-0.5 rounded-sm">
+              <div className="flex items-center bg-stone-200/60 dark:bg-stone-900 p-0.5 rounded-sm">
                 <button
                   type="button"
                   id="btn-layout-editor-only"
@@ -813,7 +1006,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               openActions(note.id, isMobile);
             }}
             title="Document Menu"
-            className="p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-150/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-850/60 transition-colors cursor-pointer"
+            className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
           >
             <MoreVertical className="w-4.5 h-4.5" />
           </button>
@@ -831,10 +1024,10 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               onClick={btn.action}
               title={btn.label}
               disabled={btn.disabled}
-              className={`p-1 rounded text-stone-500 transition-colors shrink-0
+              className={`p-2 md:p-1 rounded text-stone-500 transition-colors shrink-0
                 ${btn.disabled 
                   ? 'opacity-30 cursor-not-allowed' 
-                  : 'hover:bg-stone-150/60 dark:hover:bg-stone-850 hover:text-stone-950 dark:hover:text-stone-200 cursor-pointer'}`}
+                  : 'hover:bg-stone-200/60 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-stone-200 cursor-pointer'}`}
             >
               <btn.icon className="w-3.5 h-3.5" />
             </button>
@@ -896,6 +1089,13 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                 id="textarea-note-canvas"
                 value={localContent}
                 onChange={handleTextareaChange}
+                onPaste={handlePaste}
+                onDrop={handleImageDrop}
+                onDragOver={(event) => {
+                  if (Array.from(event.dataTransfer.items).some((item) => item.kind === 'file')) {
+                    event.preventDefault();
+                  }
+                }}
                 onSelect={handleTextareaSelect}
                 dir="auto"
                 className={`w-full bg-transparent resize-none focus:outline-none text-stone-800 dark:text-stone-200 placeholder-stone-200 dark:placeholder-stone-800 leading-relaxed font-mono pb-40 ${
@@ -911,24 +1111,6 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                 placeholder="Start writing markdown content..."
               />
             </div>
-          </div>
-          
-          {/* Persistent, minimal document info summary in the bottom-right corner */}
-          <div className="absolute bottom-4 right-6 z-20 flex items-center gap-2.5 px-3 py-1.5 rounded-xs bg-[#F2F3F8]/90 dark:bg-[#111214]/90 backdrop-blur-md border border-stone-250/50 dark:border-[#2E3039] text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 select-none shadow-xs transition-all duration-300">
-            <span className="flex items-center gap-1">
-              <span className="text-[#1D2EA0] dark:text-[#A3B5F5] font-medium">Words:</span>
-              <span className="text-stone-800 dark:text-stone-200">{calculateWordCount(localContent)}</span>
-            </span>
-            <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700" />
-            <span className="flex items-center gap-1">
-              <span className="text-[#1D2EA0] dark:text-[#A3B5F5] font-medium">Chars:</span>
-              <span className="text-stone-800 dark:text-stone-200">{calculateCharacterCount(localContent)}</span>
-            </span>
-            <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700" />
-            <span className="flex items-center gap-1">
-              <span className="text-[#1D2EA0] dark:text-[#A3B5F5] font-medium">Reading:</span>
-              <span className="text-stone-800 dark:text-stone-200">{calculateReadingTime(localContent)}m</span>
-            </span>
           </div>
           </div>
         )}
@@ -963,6 +1145,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               <MarkdownPreview 
                 content={localContent} 
                 onContentChange={(updated) => setLocalContent(updated)}
+                onOpenNote={openNoteByTitle}
               />
             </div>
           </div>
@@ -972,10 +1155,11 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
         {selectionRange && !isPreviewOnly && (
           <div 
             id="floating-format-bar"
-            className="absolute z-50 flex items-center bg-stone-950 text-white rounded-sm border border-white/10 shadow-lg px-1 py-1 gap-1.5 transition-all duration-150 text-[11px] select-none"
+            className="fixed z-50 flex items-center bg-stone-950 text-white rounded-sm border border-white/10 shadow-lg px-1 py-1 gap-1.5 transition-all duration-150 text-[11px] select-none max-w-[calc(100vw-1rem)]"
             style={{
-              left: `${selectionRange.x}px`,
-              top: `${selectionRange.y - 38}px`
+              left: `${Math.min(Math.max(selectionRange.x, 100), window.innerWidth - 100)}px`,
+              top: `${Math.max(56, selectionRange.y - 38)}px`,
+              transform: 'translateX(-50%)'
             }}
           >
             <button
@@ -1038,8 +1222,14 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
         )}
 
         {/* Temporary right-side utility panel (Outline / Document Info) */}
+        {tocOpen && !isMobile && tocOverlay && (
+          <div
+            onClick={() => setTocOpen(false)}
+            className="absolute inset-0 z-30 bg-stone-950/20 backdrop-blur-[1px]"
+          />
+        )}
         {tocOpen && !isMobile && (
-          <div className="w-[280px] h-full border-s border-stone-200/50 dark:border-[#2E3039] bg-[#E8E9EE] dark:bg-[#222328] flex flex-col shrink-0 animate-fade-in relative z-20">
+          <div className={`w-[280px] max-w-[85vw] h-full border-s border-stone-200/50 dark:border-[#2E3039] bg-[#E8E9EE] dark:bg-[#222328] flex flex-col shrink-0 animate-fade-in ${tocOverlay ? 'absolute end-0 top-0 z-40 shadow-2xl' : 'relative z-20'}`}>
             {/* Header with quiet textual tabs */}
             <div className="flex border-b border-stone-200/50 dark:border-[#2E3039] px-2 pt-2">
               <button
@@ -1081,7 +1271,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                         key={i}
                         type="button"
                         onClick={() => scrollToHeading(h.id)}
-                        className={`w-full text-start py-1 px-2 text-xs rounded-sm hover:bg-stone-150/50 dark:hover:bg-stone-900 text-stone-600 dark:text-stone-400 hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors truncate cursor-pointer
+                        className={`w-full text-start py-1 px-2 text-xs rounded-sm hover:bg-stone-200/50 dark:hover:bg-stone-900 text-stone-600 dark:text-stone-400 hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors truncate cursor-pointer
                           ${h.level === 1 ? 'font-semibold' : h.level === 2 ? 'ps-4 text-[11px]' : 'ps-8 text-[10px]'}`}
                       >
                         {h.text}
@@ -1095,7 +1285,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                     <span className="text-[9px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest block mb-2">
                       File Information
                     </span>
-                    <div className="flex flex-col gap-2 bg-white/45 dark:bg-stone-900/20 p-3 rounded-sm border border-stone-200/30 dark:border-stone-850/40">
+                    <div className="flex flex-col gap-2 bg-white/45 dark:bg-stone-900/20 p-3 rounded-sm border border-stone-200/30 dark:border-stone-800/40">
                       <div className="flex items-center justify-between">
                         <span className="text-stone-400 text-[11px]">Title</span>
                         <span className="font-semibold text-stone-800 dark:text-stone-200 truncate max-w-[150px]">{note.title || 'Untitled'}</span>
@@ -1119,7 +1309,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                     <span className="text-[9px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest block mb-2">
                       Document Statistics
                     </span>
-                    <div className="flex flex-col gap-2 bg-white/45 dark:bg-stone-900/20 p-3 rounded-sm border border-stone-200/30 dark:border-stone-850/40">
+                    <div className="flex flex-col gap-2 bg-white/45 dark:bg-stone-900/20 p-3 rounded-sm border border-stone-200/30 dark:border-stone-800/40">
                       <div className="flex items-center justify-between">
                         <span className="text-stone-400 text-[11px]">Words</span>
                         <span className="font-mono font-bold text-stone-800 dark:text-stone-200">{calculateWordCount(localContent)}</span>
@@ -1144,7 +1334,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                         {note.tags.map((tg, idx) => (
                           <span 
                             key={idx} 
-                            className="flex items-center gap-1 px-2 py-0.5 rounded-sm bg-stone-150/60 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-800 text-[10px] text-stone-600 dark:text-stone-400 font-semibold"
+                            className="flex items-center gap-1 px-2 py-0.5 rounded-sm bg-stone-200/60 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-800 text-[10px] text-stone-600 dark:text-stone-400 font-semibold"
                           >
                             <Tag className="w-2.5 h-2.5" />
                             {tg}
@@ -1180,7 +1370,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
         {/* Subtle Editorial Status Bar at the bottom right - gracefully fades out on typing */}
         {!isMobile && (
           <div 
-            className={`absolute bottom-4 right-4 z-30 flex items-center gap-2.5 px-3 py-1 bg-[#F2F3F8]/90 dark:bg-[#111214]/90 backdrop-blur-md rounded-sm border border-stone-200/50 dark:border-stone-850/50 text-[9px] tracking-widest uppercase font-bold text-stone-400 dark:text-stone-500 select-none shadow-sm pointer-events-none transition-opacity duration-700
+            className={`absolute bottom-4 right-4 z-30 flex items-center gap-2.5 px-3 py-1 bg-[#F2F3F8]/90 dark:bg-[#111214]/90 backdrop-blur-md rounded-sm border border-stone-200/50 dark:border-stone-800/50 text-[9px] tracking-widest uppercase font-bold text-stone-400 dark:text-stone-500 select-none shadow-sm pointer-events-none transition-opacity duration-700
               ${isTyping ? 'opacity-10' : 'opacity-100'}`}
           >
             <span>{calculateWordCount(localContent)} words</span>
@@ -1208,7 +1398,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               type="button"
               id="btn-unsaved-cancel"
               onClick={cancelNavigation}
-              className="px-3 py-1.5 rounded-sm text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-850 cursor-pointer"
+              className="px-3 py-1.5 rounded-sm text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
             >
               Cancel
             </button>
@@ -1231,6 +1421,29 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
           </div>
         </div>
       </Modal>
+
+      {showHistory && (
+        <NoteHistory
+          noteId={noteId}
+          isEncrypted={!!note.isEncrypted}
+          onClose={() => setShowHistory(false)}
+          onRestore={(snapshot) => {
+            setLocalTitle(snapshot.title);
+            setLocalContent(snapshot.content);
+            showToast('Version restored. Autosave will keep it.', 'success');
+          }}
+        />
+      )}
+
+      {showLinks && (
+        <LinksPanel
+          noteId={noteId}
+          title={localTitle || note.title}
+          content={localContent}
+          onOpenTitle={openNoteByTitle}
+          onClose={() => setShowLinks(false)}
+        />
+      )}
 
     </div>
   );

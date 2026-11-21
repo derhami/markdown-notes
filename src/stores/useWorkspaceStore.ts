@@ -22,6 +22,7 @@ interface WorkspaceState {
   activeCategory: SidebarCategory;
   searchQuery: string;
   commandPaletteOpen: boolean;
+  smartPanelOpen: boolean;
   focusMode: boolean;
   zenMode: boolean;
   sidebarOpen: boolean;
@@ -40,6 +41,7 @@ interface WorkspaceState {
   forceSetActiveCategory: (category: SidebarCategory) => void;
   setSearchQuery: (query: string) => void;
   setCommandPaletteOpen: (open: boolean) => void;
+  setSmartPanelOpen: (open: boolean) => void;
   setFocusMode: (active: boolean) => void;
   setZenMode: (active: boolean) => void;
   setSidebarOpen: (open: boolean) => void;
@@ -59,6 +61,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   activeCategory: 'all',
   searchQuery: '',
   commandPaletteOpen: false,
+  smartPanelOpen: false,
   focusMode: false,
   zenMode: false,
   sidebarOpen: true,
@@ -112,6 +115,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
 
   setSearchQuery: (query) => set({ searchQuery: query }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+  setSmartPanelOpen: (open) => set({ smartPanelOpen: open }),
   setFocusMode: (active) => set((state) => ({ 
     focusMode: active,
     zenMode: active ? state.zenMode : false 
@@ -176,6 +180,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     searchQuery: '',
     focusMode: false,
     zenMode: false,
+    smartPanelOpen: false,
     tocOpen: false,
     isEditorDirty: false,
     pendingNoteId: null,

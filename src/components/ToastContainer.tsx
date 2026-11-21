@@ -16,7 +16,10 @@ export default function ToastContainer() {
 
   return (
     <div 
-      className={`fixed bottom-5 z-50 flex flex-col gap-2 max-w-sm w-full px-4 md:px-0 
+      role="region"
+      aria-live="polite"
+      aria-label="Notifications"
+      className={`fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-[calc(1.25rem+env(safe-area-inset-bottom))] z-50 flex flex-col gap-2 max-w-sm w-full px-4 md:px-0 
         ${isRtl ? 'md:left-5 md:right-auto left-1/2 -translate-x-1/2 md:translate-x-0' : 'md:right-5 md:left-auto left-1/2 -translate-x-1/2 md:translate-x-0'}`}
     >
       {toasts.map((toast) => {
@@ -28,6 +31,7 @@ export default function ToastContainer() {
           <div
             key={toast.id}
             id={`toast-${toast.id}`}
+            role={isError ? 'alert' : 'status'}
             className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg transition-all duration-300 transform scale-100 opacity-100 translate-y-0
               ${isRtl ? 'text-right' : 'text-left'}
               ${isSuccess ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-100' : ''}
@@ -69,6 +73,7 @@ export default function ToastContainer() {
               type="button"
               id={`btn-toast-close-${toast.id}`}
               onClick={() => removeToast(toast.id)}
+              aria-label="Dismiss notification"
               className="mt-0.5 p-0.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-current/60 hover:text-current transition-colors cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />

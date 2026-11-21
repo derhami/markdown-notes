@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useRef } from 'react';
 import { 
   Plus, FileUp, Settings, Clock, Pin, FileText, ArrowUpRight, 
   Sparkles, Activity, PlusCircle, Search, CloudLightning, Command, Folder
@@ -19,6 +19,7 @@ import {
   calculateReadingTime, extractFirstHeading 
 } from './utils/notesHelper';
 import { generateId } from './utils/id';
+import { withoutVaultSettings } from './utils/backup';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -32,6 +33,7 @@ const SettingsPanel = lazy(() => import('./components/SettingsPanel'));
 const CommandPalette = lazy(() => import('./components/CommandPalette'));
 const NoteActionManager = lazy(() => import('./components/NoteActionManager'));
 const PersonalDashboard = lazy(() => import('./components/PersonalDashboard'));
+const SmartAssistant = lazy(() => import('./components/SmartAssistant'));
 
 const PanelFallback = () => (
   <div className="flex-1 h-full bg-[#F2F3F8] dark:bg-[#111214] flex flex-col items-center justify-center text-stone-400">
@@ -43,7 +45,7 @@ export default function App() {
   const { 
     activeNoteId, setActiveNoteId, activeCategory, setActiveCategory,
     focusMode, setFocusMode, zenMode, setZenMode, sidebarOpen, setSidebarOpen,
-    setCommandPaletteOpen
+    setCommandPaletteOpen, smartPanelOpen, setSmartPanelOpen
   } = useWorkspaceStore();
   const { loadSettings, isLoaded, settings, updateSettings } = useSettingsStore();
   const { showToast } = useToastStore();
@@ -106,6 +108,84 @@ export default function App() {
       }
     };
     init();
+  }, []);
+
+  // Remember the last document so a killed tab or app resumes where it was.
+  useEffect(() => {
+    if (!activeNoteId || activeNoteId === 'settings') return;
+    try {
+      localStorage.setItem('markdownnotes:last-note', activeNoteId);
+    } catch {
+      /* storage can be unavailable in private mode */
+    }
+  }, [activeNoteId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const last = localStorage.getItem('markdownnotes:last-note');
+        if (!last || cancelled) return;
+        const note = await db.notes.get(last);
+        const state = useWorkspaceStore.getState();
+        if (!note || note.deletedAt || state.activeNoteId) return;
+        state.forceSetActiveNoteId(last);
+      } catch {
+        /* ignore a missing or unreadable note */
+      }
+    }, 500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  // Persist the sidebar preference and restore it on the next session.
+  const sidebarSynced = useRef(false);
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!sidebarSynced.current) {
+      sidebarSynced.current = true;
+      setSidebarOpen(settings.sidebarOpen);
+      return;
+    }
+    updateSettings({ sidebarOpen });
+  }, [isLoaded, settings.sidebarOpen, sidebarOpen]);
+
+  // Android hardware back: leave the note, then the category, then the app.
+  useEffect(() => {
+    let removeListener: (() => void) | undefined;
+    let cancelled = false;
+    if (!(window as any).Capacitor?.isNativePlatform?.()) return;
+
+    import('@capacitor/app')
+      .then(({ App: NativeApp }) => {
+        if (cancelled) return;
+        NativeApp.addListener('backButton', () => {
+          const state = useWorkspaceStore.getState();
+          if (state.smartPanelOpen) {
+            state.setSmartPanelOpen(false);
+          } else if (state.commandPaletteOpen) {
+            state.setCommandPaletteOpen(false);
+          } else if (state.showUnsavedModal) {
+            state.cancelNavigation();
+          } else if (state.activeNoteId) {
+            state.setActiveNoteId(null);
+          } else if (state.activeCategory !== 'all') {
+            state.setActiveCategory('all');
+          } else {
+            NativeApp.exitApp();
+          }
+        }).then((handle) => {
+          removeListener = () => handle.remove();
+        });
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+      removeListener?.();
+    };
   }, []);
 
   // Sync HTML/Body class with active theme
@@ -189,6 +269,12 @@ export default function App() {
         showToast(zenMode ? 'Normal View Restored' : 'Zen Mode Enabled', 'info');
       }
 
+      // Ctrl + J (Toggle Smart Assistant)
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        setSmartPanelOpen(!smartPanelOpen);
+      }
+
       // Ctrl + P (Cycle Editor Preview Modes)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
         e.preventDefault();
@@ -198,20 +284,33 @@ export default function App() {
         showToast(`Layout changed: ${modes[nextIdx]}`, 'info');
       }
 
-      // Delete key (Trash active note if not editing text fields)
-      if (e.key === 'Delete' && activeNoteId && !isEditing && activeNoteId !== 'settings') {
+      // Delete key: never fire while a dialog is open, and always offer Undo.
+      const isDialogOpen = !!document.querySelector('[aria-modal="true"]');
+      if (
+        e.key === 'Delete' &&
+        activeNoteId &&
+        !isEditing &&
+        activeNoteId !== 'settings' &&
+        !isDialogOpen
+      ) {
         const activeNote = await db.notes.get(activeNoteId);
         if (activeNote && !activeNote.deletedAt) {
           await db.notes.update(activeNoteId, { deletedAt: Date.now() });
           setActiveNoteId(null);
-          showToast('Document moved to Trash', 'info');
+          showToast('Document moved to Trash', 'info', {
+            label: 'Undo',
+            onClick: async () => {
+              await db.notes.update(activeNoteId, { deletedAt: null });
+              setActiveNoteId(activeNoteId);
+            }
+          });
         }
       }
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [sidebarOpen, focusMode, zenMode, activeNoteId, settings.editorMode]);
+  }, [sidebarOpen, focusMode, zenMode, activeNoteId, settings.editorMode, smartPanelOpen]);
 
   // Listen to custom dashboard file importer routing
   useEffect(() => {
@@ -273,7 +372,7 @@ export default function App() {
                 await db.notes.put(nt);
               }
               if (parsed.settings) {
-                await updateSettings(parsed.settings);
+                await updateSettings(withoutVaultSettings(parsed.settings));
               }
               showToast('Backup archive imported successfully', 'success');
               setTimeout(() => window.location.reload(), 800);
@@ -514,7 +613,7 @@ export default function App() {
 
   if (!dbReady || !isLoaded) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#F2F3F8] dark:bg-[#111214] text-stone-400">
+      <div className="app-shell flex flex-col items-center justify-center bg-[#F2F3F8] dark:bg-[#111214] text-stone-400">
         <p className="animate-pulse text-[10px] tracking-[0.2em] font-bold uppercase">BOOTSTRAPPING PERSONAL STUDIO...</p>
       </div>
     );
@@ -523,11 +622,23 @@ export default function App() {
   // Determine what panels to show based on device width classes
   const showMobileFocusedNote = isMobile && activeNoteId !== null;
   const showLeftRail = !zenMode && !focusMode && (isDesktop || (isTablet && activeNoteId === null));
-  const showMiddleColumn = !focusMode && sidebarOpen && activeNoteId !== 'settings' && (!isMobile || activeNoteId === null);
+
+  // Mobile always resolves list-vs-canvas itself, so a collapsed sidebar or a
+  // leftover focus mode can never leave the phone on a blank screen.
+  const showMiddleColumn = activeNoteId === 'settings'
+    ? false
+    : isMobile
+      ? activeNoteId === null
+      : !focusMode && sidebarOpen;
+
+  // Never let the browser column eat the writing canvas on smaller laptops.
+  const browserWidth = isMobile
+    ? '100%'
+    : `${Math.min(settings.noteListWidth || 320, Math.round(viewportWidth * 0.34))}px`;
 
   return (
     <div 
-      className="h-screen w-screen flex overflow-hidden bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-[#E2E8F0] transition-colors duration-200 select-none relative"
+      className="app-shell flex overflow-hidden bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-[#E2E8F0] transition-colors duration-200 select-none relative"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -556,7 +667,7 @@ export default function App() {
       {showMiddleColumn && (
         <>
           <div 
-            style={{ width: isMobile ? '100%' : `${settings.noteListWidth || 320}px` }}
+            style={{ width: browserWidth }}
             className="border-e border-[#D1D4DC] dark:border-[#2E3039] shrink-0 h-full overflow-hidden flex flex-col relative bg-white dark:bg-[#1A1B1E] transition-colors duration-200"
           >
             <NoteList />
@@ -593,7 +704,8 @@ export default function App() {
 
       {/* Responsive Bottom Navigation Rail (Only visible on mobile and only when in browsing mode) */}
       {isMobile && activeNoteId === null && (
-        <div className="fixed bottom-0 inset-x-0 h-14 border-t border-[#D1D4DC] dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] flex items-center justify-around z-30 select-none transition-colors duration-200">
+        <div className="fixed bottom-0 inset-x-0 z-30 border-t border-[#D1D4DC] dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] pb-[env(safe-area-inset-bottom)] select-none transition-colors duration-200">
+          <div className="mobile-tabs h-14 flex items-center justify-around">
           <button
             type="button"
             onClick={() => {
@@ -638,6 +750,7 @@ export default function App() {
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-bold mt-1 uppercase">Settings</span>
           </button>
+          </div>
         </div>
       )}
 
@@ -649,6 +762,11 @@ export default function App() {
       {/* Note actions bottom sheets and modals */}
       <Suspense fallback={null}>
         <NoteActionManager />
+      </Suspense>
+
+      {/* On-device smart assistant (summary, related notes, ask, insights) */}
+      <Suspense fallback={null}>
+        <SmartAssistant />
       </Suspense>
 
       {/* Global System toast notifications bar */}

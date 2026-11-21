@@ -149,8 +149,6 @@ export const translations = {
     themeDark: "Sophisticated Dark",
     themeSystem: "System Default",
     
-    accentColorLabel: "Accent Color",
-    accentColorDesc: "Pick a brand accent color for active items, buttons, and highlights",
     densityLabel: "Interface Density",
     densityDesc: "Adjust workspace layout density to suit your style",
     densityComfortable: "Comfortable (Spacious)",
@@ -343,8 +341,6 @@ export const translations = {
     themeDark: "تیره مدرن",
     themeSystem: "پیش‌فرض سیستم",
     
-    accentColorLabel: "رنگ شاخص (Accent)",
-    accentColorDesc: "یک رنگ اصلی انتخاب کنید که برای دکمه‌ها، بخش‌های فعال و هایلایت‌ها استفاده شود",
     densityLabel: "تراکم رابط کاربری",
     densityDesc: "تراکم و فاصله‌های فضای کاری را به نسبت نیاز خود تنظیم کنید",
     densityComfortable: "فاصله‌های جادار (بسیار خوانا)",

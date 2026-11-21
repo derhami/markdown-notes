@@ -10,12 +10,15 @@ import {
   Shield, Lock, Unlock, Key, Eye, EyeOff, AlertTriangle, FileText, RefreshCw, Folder, Copy
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/database';
+import { db, markWorkspaceSeeded } from '../db/database';
+import { stringifyFrontmatter, sanitizeFileName } from '../utils/notesHelper';
+import { createZip, downloadBlob } from '../utils/zip';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { useToastStore } from '../stores/useToastStore';
 import { useVaultStore } from '../stores/useVaultStore';
 import type { Theme, Note } from '../types';
+import { withoutVaultSettings } from '../utils/backup';
 
 export default function SettingsPanel() {
   const { settings, updateSettings } = useSettingsStore();
@@ -191,23 +194,39 @@ export default function SettingsPanel() {
     try {
       const data = restorePreview.data;
 
-      // Merge and save folders
+      // Merge with last-write-wins semantics: importing an older archive must
+      // never roll back a note that was edited more recently on this device.
       for (const f of data.folders) {
-        await db.folders.put(f);
+        const existing = await db.folders.get(f.id);
+        if (!existing || (f.updatedAt ?? 0) > (existing.updatedAt ?? 0)) {
+          await db.folders.put(f);
+        }
       }
-      // Merge and save tags
       for (const tg of data.tags) {
-        await db.tags.put(tg);
+        const existing = await db.tags.get(tg.id);
+        if (!existing) await db.tags.put(tg);
       }
-      // Merge and save notes
+      let keptNewer = 0;
       for (const nt of data.notes) {
-        await db.notes.put(nt);
+        const existing = await db.notes.get(nt.id);
+        if (!existing) {
+          await db.notes.put(nt);
+        } else if ((nt.updatedAt ?? 0) > (existing.updatedAt ?? 0)) {
+          await db.notes.put(nt);
+        } else if ((existing.updatedAt ?? 0) > (nt.updatedAt ?? 0)) {
+          keptNewer++;
+        }
       }
       if (data.settings) {
-        await updateSettings(data.settings);
+        await updateSettings(withoutVaultSettings(data.settings));
       }
 
-      showToast('Backup archive successfully restored and merged', 'success');
+      showToast(
+        keptNewer > 0
+          ? `Merged. Kept ${keptNewer} newer local note${keptNewer === 1 ? '' : 's'}; vault keys unchanged.`
+          : 'Backup merged. Vault keys were kept unchanged for safety.',
+        'success'
+      );
       setRestorePreview(null);
       setTimeout(() => window.location.reload(), 800);
     } catch (err) {
@@ -261,38 +280,63 @@ export default function SettingsPanel() {
     }
   };
 
-  // Trigger individual browser downloads for markdown files
+  // Bundle every note into one ZIP: browsers block chains of downloads.
   const handleDownloadMarkdownFiles = () => {
-    notes.forEach((note) => {
-      if (note.deletedAt) return;
-      
+    const entries: { name: string; content: string }[] = [];
+    const usedNames = new Map<string, number>();
+
+    for (const note of notes) {
+      if (note.deletedAt) continue;
+
       let title = note.title || 'Untitled';
       let content = note.content || '';
+      let tags = note.tags || [];
 
       if (note.isEncrypted) {
-        if (isLocked) return; // Skip locked notes to protect security
         const dec = useVaultStore.getState().decryptedNotes[note.id];
-        title = dec?.title || 'Untitled_Secure_Note';
-        content = dec?.content || '';
+        if (!dec) continue; // never write placeholder files for locked notes
+        title = dec.title || 'Untitled_Secure_Note';
+        content = dec.content || '';
+        tags = dec.tags || [];
       }
 
-      const blob = new Blob([content], { type: 'text/markdown' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${title}.md`;
-      link.click();
-    });
-    showToast('Triggered download for active notes', 'success');
+      const base = sanitizeFileName(title || 'Untitled') || 'untitled';
+      const count = (usedNames.get(base) ?? 0) + 1;
+      usedNames.set(base, count);
+      const fileName = count === 1 ? `${base}.md` : `${base} (${count}).md`;
+
+      entries.push({
+        name: fileName,
+        content: stringifyFrontmatter(content, {
+          title,
+          tags,
+          created: new Date(note.createdAt).toISOString(),
+          updated: new Date(note.updatedAt).toISOString()
+        })
+      });
+    }
+
+    if (entries.length === 0) {
+      showToast('No unlocked notes available to export', 'error');
+      return;
+    }
+
+    const archive = createZip(entries);
+    downloadBlob(archive, `markdownnotes_export_${new Date().toISOString().slice(0, 10)}.zip`);
+    showToast(`Exported ${entries.length} note(s) as a ZIP archive`, 'success');
   };
 
   const handleWipeDatabase = async () => {
     if (wipeConfirmText === 'WIPE') {
       try {
         await db.notes.clear();
+        await db.noteVersions.clear();
+        await db.attachments.clear();
         await db.folders.clear();
         await db.tags.clear();
         await db.settings.clear();
+        // Keep a seed marker so the demo library is not recreated on reload.
+        await markWorkspaceSeeded();
         showToast('All database content wiped successfully', 'success');
         setTimeout(() => window.location.reload(), 1000);
       } catch (err) {
@@ -394,7 +438,7 @@ export default function SettingsPanel() {
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Color Mode</label>
         <p className="text-[10px] text-stone-400 leading-normal">Choose light, dark, or sync with your operating system preferences.</p>
         
-        <div className="flex gap-2 mt-1">
+        <div className="flex flex-wrap gap-2 mt-1">
           {[
             { id: 'light', label: 'Light Mode' },
             { id: 'dark', label: 'Dark Mode' },
@@ -421,10 +465,11 @@ export default function SettingsPanel() {
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">UI Density</label>
         <p className="text-[10px] text-stone-400 leading-normal font-semibold">Adjust vertical padding to show more or less workspace item list density.</p>
         
-        <div className="flex gap-2 mt-1">
+        <div className="flex flex-wrap gap-2 mt-1">
           {[
             { id: 'comfortable', label: 'Comfortable' },
-            { id: 'compact', label: 'Compact spacing' }
+            { id: 'compact', label: 'Compact spacing' },
+            { id: 'spacious', label: 'Spacious' }
           ].map((d) => (
             <button
               key={d.id}
@@ -473,7 +518,7 @@ export default function SettingsPanel() {
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Line Spacing</label>
         <p className="text-[10px] text-stone-400 leading-normal font-semibold">Alter the vertical space between lines of raw text for legibility.</p>
         
-        <div className="flex gap-2 mt-1">
+        <div className="flex flex-wrap gap-2 mt-1">
           {['1.4', '1.6', '1.8', '2.0'].map((lh) => (
             <button
               key={lh}
@@ -583,7 +628,7 @@ export default function SettingsPanel() {
       </div>
 
       {/* Core metrics grid */}
-      <div className="grid grid-cols-3 gap-3 border-t border-stone-100 dark:border-[#2E3039] pt-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 border-t border-stone-100 dark:border-[#2E3039] pt-4">
         {[
           { label: 'Documents', count: activeNotesCount },
           { label: 'Folders', count: folders.length },
@@ -591,7 +636,7 @@ export default function SettingsPanel() {
         ].map((stat) => (
           <div key={stat.label} className="p-3 rounded-sm border border-stone-100 dark:border-[#2E3039] bg-[#F2F3F8] dark:bg-[#222328] flex flex-col gap-0.5 text-center">
             <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">{stat.label}</span>
-            <span className="text-sm font-serif font-bold text-stone-850 dark:text-stone-100 mt-0.5">{stat.count}</span>
+            <span className="text-sm font-serif font-bold text-stone-800 dark:text-stone-100 mt-0.5">{stat.count}</span>
           </div>
         ))}
       </div>
@@ -608,7 +653,7 @@ export default function SettingsPanel() {
             onClick={() => setBackupIsEncrypted(true)}
             className={`px-2.5 py-1 text-[10px] font-bold rounded-sm border transition-all cursor-pointer
               ${backupIsEncrypted 
-                ? 'bg-stone-100 dark:bg-[#222328] text-stone-850 dark:text-stone-100 border-stone-200 dark:border-[#2E3039]' 
+                ? 'bg-stone-100 dark:bg-[#222328] text-stone-800 dark:text-stone-100 border-stone-200 dark:border-[#2E3039]' 
                 : 'text-stone-400 border-transparent'}`}
           >
             Encrypted Backup (Recommended)
@@ -618,7 +663,7 @@ export default function SettingsPanel() {
             onClick={() => setBackupIsEncrypted(false)}
             className={`px-2.5 py-1 text-[10px] font-bold rounded-sm border transition-all cursor-pointer
               ${!backupIsEncrypted 
-                ? 'bg-stone-100 dark:bg-[#222328] text-stone-850 dark:text-stone-100 border-stone-200 dark:border-[#2E3039]' 
+                ? 'bg-stone-100 dark:bg-[#222328] text-stone-800 dark:text-stone-100 border-stone-200 dark:border-[#2E3039]' 
                 : 'text-stone-400 border-transparent'}`}
           >
             Plaintext Export
@@ -659,7 +704,7 @@ export default function SettingsPanel() {
               <span>Restore Preview & Conflict Analysis</span>
             </h4>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 leading-relaxed font-semibold">
-              Review what will be imported into your database. Existing items with conflicting IDs will be overwritten, other items will be merged.
+              Review what will be imported into your database. Existing items with conflicting IDs will be overwritten, other items will be merged. Vault keys stored in the archive are ignored so your current vault keeps working.
             </p>
           </div>
 
@@ -778,7 +823,7 @@ export default function SettingsPanel() {
       {!vaultPasswordExists ? (
         <form onSubmit={handleSetupVault} className="border border-stone-200/60 dark:border-[#2E3039] p-4 rounded-sm flex flex-col gap-3 bg-white dark:bg-[#1A1B1E]">
           <div>
-            <h4 className="text-xs font-bold text-stone-850 dark:text-stone-100 flex items-center gap-1.5">
+            <h4 className="text-xs font-bold text-stone-800 dark:text-stone-100 flex items-center gap-1.5">
               <Shield className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
               <span>Initialize Secure Vault</span>
             </h4>
@@ -795,7 +840,7 @@ export default function SettingsPanel() {
                 value={vaultPass}
                 onChange={(e) => setVaultPass(e.target.value)}
                 placeholder="Secure Password"
-                className="w-full py-1.5 px-3 border border-stone-250 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
+                className="w-full py-1.5 px-3 border border-stone-300 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -805,7 +850,7 @@ export default function SettingsPanel() {
                 value={vaultPassConfirm}
                 onChange={(e) => setVaultPassConfirm(e.target.value)}
                 placeholder="Confirm Password"
-                className="w-full py-1.5 px-3 border border-stone-250 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
+                className="w-full py-1.5 px-3 border border-stone-300 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
               />
             </div>
           </div>
@@ -833,11 +878,13 @@ export default function SettingsPanel() {
               <Shield className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-stone-800 dark:text-stone-100">Private Cryptographic Vault</span>
-                <span className="text-[10px] text-stone-400 font-semibold">Encrypted with AES-256-GCM standards</span>
+                <span className="text-[10px] text-stone-400 font-semibold">
+                  AES-256-GCM · PBKDF2 {((settings.vaultKdfIterations || 100000) / 1000).toFixed(0)}k rounds
+                </span>
               </div>
             </div>
             
-            <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-sm bg-stone-50 dark:bg-[#111214] text-[10px] font-bold border border-stone-150 dark:border-[#2E3039]">
+            <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-sm bg-stone-50 dark:bg-[#111214] text-[10px] font-bold border border-stone-200 dark:border-[#2E3039]">
               {isLocked ? (
                 <>
                   <Lock className="w-3 h-3 text-amber-500" />
@@ -896,7 +943,7 @@ export default function SettingsPanel() {
             <p className="text-[10px] text-stone-400 leading-normal font-semibold">Automatically lock the vault after a specific period of user inactivity.</p>
             <div className="flex gap-1.5 mt-1 flex-wrap">
               {[
-                { id: 'immediately', label: 'Instant' },
+                { id: 'immediately', label: 'After 5s idle' },
                 { id: '5m', label: '5 Minutes' },
                 { id: '15m', label: '15 Minutes' },
                 { id: '30m', label: '30 Minutes' },
@@ -927,7 +974,7 @@ export default function SettingsPanel() {
               type="button"
               onClick={() => setShowHidden(!showHidden)}
               className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer
-                ${showHidden ? 'bg-[#1D2EA0] dark:bg-[#A3B5F5]' : 'bg-stone-200 dark:bg-stone-850'}`}
+                ${showHidden ? 'bg-[#1D2EA0] dark:bg-[#A3B5F5]' : 'bg-stone-200 dark:bg-stone-800'}`}
             >
               <div 
                 className={`w-4.5 h-4.5 rounded-full bg-white shadow-sm transform transition-transform duration-200
@@ -1026,9 +1073,9 @@ export default function SettingsPanel() {
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Boost your productivity using keyboard commands</p>
       </div>
 
-      <div className="border border-stone-150 dark:border-[#2E3039] rounded-sm overflow-hidden">
+      <div className="border border-stone-200 dark:border-[#2E3039] rounded-sm overflow-hidden">
         <table className="min-w-full border-collapse text-xs text-stone-700 dark:text-stone-300">
-          <thead className="bg-stone-50 dark:bg-stone-900 border-b border-stone-150 dark:border-[#2E3039]">
+          <thead className="bg-stone-50 dark:bg-stone-900 border-b border-stone-200 dark:border-[#2E3039]">
             <tr>
               <th className="p-2.5 font-bold text-stone-800 dark:text-stone-200 text-left">Action</th>
               <th className="p-2.5 font-bold text-stone-800 dark:text-stone-200 text-right">Keybind</th>
@@ -1068,7 +1115,7 @@ export default function SettingsPanel() {
               <button 
                 type="button" 
                 onClick={() => setMobileSection('menu')}
-                className="p-1 -ml-1 mr-1 rounded hover:bg-stone-100 dark:hover:bg-stone-850 text-stone-500 cursor-pointer"
+                className="p-1 -ml-1 mr-1 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-500 cursor-pointer"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -1085,14 +1132,14 @@ export default function SettingsPanel() {
           <button
             type="button"
             onClick={() => setActiveNoteId(null)}
-            className="p-1 rounded hover:bg-stone-100 dark:hover:bg-stone-850 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+            className="p-1 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Mobile Settings Body */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-safe">
           {mobileSection === 'menu' ? (
             <div className="flex flex-col p-4 gap-1">
               {[
@@ -1109,7 +1156,7 @@ export default function SettingsPanel() {
                     setActiveTab(tab.id as any);
                     setMobileSection(tab.id as any);
                   }}
-                  className="w-full h-12 px-3 rounded flex items-center justify-between hover:bg-stone-50 dark:hover:bg-stone-850/50 transition-colors cursor-pointer text-left text-stone-700 dark:text-stone-300 border-b border-stone-50 dark:border-[#2E3039]/40"
+                  className="w-full h-12 px-3 rounded flex items-center justify-between hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors cursor-pointer text-left text-stone-700 dark:text-stone-300 border-b border-stone-50 dark:border-[#2E3039]/40"
                 >
                   <div className="flex items-center gap-3">
                     <tab.icon className="w-4.5 h-4.5 text-stone-400" />
@@ -1153,7 +1200,7 @@ export default function SettingsPanel() {
           type="button"
           id="btn-settings-close"
           onClick={() => setActiveNoteId(null)}
-          className="p-1 rounded hover:bg-stone-100 dark:hover:bg-stone-850 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+          className="p-1 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -1179,7 +1226,7 @@ export default function SettingsPanel() {
               className={`w-full py-1.5 px-2.5 rounded-sm text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors text-left
                 ${activeTab === tab.id 
                   ? 'bg-[#D1D4DC] dark:bg-[#222328] text-stone-950 dark:text-stone-100 font-bold shadow-sm' 
-                  : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-850/30'}`}
+                  : 'text-stone-500 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/30'}`}
             >
               <tab.icon className="w-3.5 h-3.5 shrink-0 text-stone-400" />
               <span>{tab.label}</span>

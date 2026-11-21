@@ -70,7 +70,7 @@ function FolderNode({
         </div>
 
         {/* Quiet operational controls visible on hover */}
-        <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity shrink-0">
+        <div className="hover-actions flex items-center gap-0.5 transition-opacity shrink-0">
           <button
             type="button"
             id={`btn-folder-addsub-${folder.id}`}
@@ -79,7 +79,7 @@ function FolderNode({
               onAddSubfolder(folder.id);
             }}
             title="Add Subfolder"
-            className="p-0.5 rounded hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 cursor-pointer"
+            className="p-1 rounded hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 cursor-pointer"
           >
             <FolderPlus className="w-3 h-3" />
           </button>
@@ -91,7 +91,7 @@ function FolderNode({
               onRename(folder);
             }}
             title="Rename Folder"
-            className="p-0.5 rounded hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 cursor-pointer"
+            className="p-1 rounded hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 cursor-pointer"
           >
             <Edit2 className="w-3 h-3" />
           </button>
@@ -103,7 +103,7 @@ function FolderNode({
               onDelete(folder.id);
             }}
             title="Delete Folder"
-            className="p-0.5 rounded hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-400 dark:text-stone-500 hover:text-rose-500 cursor-pointer"
+            className="p-1 rounded hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-400 dark:text-stone-500 hover:text-rose-500 cursor-pointer"
           >
             <Trash2 className="w-3 h-3" />
           </button>

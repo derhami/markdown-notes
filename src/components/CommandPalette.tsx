@@ -6,7 +6,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, FileText, FolderPlus, Trash2, Moon, Sun, Monitor, 
-  Settings, CloudLightning, Maximize2, Sparkles, HelpCircle 
+  Settings, CloudLightning, Maximize2, Sparkles, HelpCircle,
+  Wand2, Hash
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
@@ -15,7 +16,28 @@ import { useSettingsStore } from '../stores/useSettingsStore';
 import { useToastStore } from '../stores/useToastStore';
 import { translations } from '../utils/i18n';
 import { generateId } from '../utils/id';
+import { normalizeText } from '../utils/notesHelper';
+import { useVaultStore } from '../stores/useVaultStore';
 import type { Note } from '../types';
+
+/** Cheap subsequence fuzzy match with a bonus for prefix and consecutive hits. */
+function fuzzyScore(text: string, query: string): number {
+  if (!query) return 1;
+  const direct = text.indexOf(query);
+  if (direct !== -1) return 100 - direct + Math.min(20, query.length);
+
+  let cursor = 0;
+  let score = 0;
+  let streak = 0;
+  for (const character of query) {
+    const index = text.indexOf(character, cursor);
+    if (index === -1) return 0;
+    score += 1 + streak;
+    streak = index === cursor ? streak + 1 : 0;
+    cursor = index + 1;
+  }
+  return score;
+}
 
 interface PaletteItem {
   id: string;
@@ -27,11 +49,13 @@ interface PaletteItem {
 
 export default function CommandPalette() {
   const { 
-    commandPaletteOpen, setCommandPaletteOpen, setActiveNoteId, 
+    commandPaletteOpen, setCommandPaletteOpen, setActiveNoteId, setActiveCategory,
+    setSmartPanelOpen,
     focusMode, setFocusMode, zenMode, setZenMode, sidebarOpen, setSidebarOpen 
   } = useWorkspaceStore();
   const { settings, updateSettings } = useSettingsStore();
   const { showToast } = useToastStore();
+  const { decryptedNotes } = useVaultStore();
   
   const t = translations[settings.language];
   const isRtl = settings.language === 'fa';
@@ -45,6 +69,7 @@ export default function CommandPalette() {
   // Fetch all active notes for query
   const notes = useLiveQuery(() => db.notes.toArray()) || [];
   const activeNotes = notes.filter((n) => !n.deletedAt);
+  const tagRecords = useLiveQuery(() => db.tags.toArray()) || [];
 
   // Define commands list
   const commands: PaletteItem[] = [
@@ -74,6 +99,13 @@ export default function CommandPalette() {
         setActiveNoteId(newNoteId);
         showToast(t.noteCreated, 'success');
       }
+    },
+    {
+      id: 'smart-assistant',
+      label: 'Smart Assistant',
+      icon: Wand2,
+      action: () => setSmartPanelOpen(true),
+      subtitle: 'Summarize, relate and ask your notes on-device'
     },
     { 
       id: 'focus-toggle', 
@@ -149,10 +181,10 @@ export default function CommandPalette() {
       if (e.key === 'Escape') {
         e.preventDefault();
         setCommandPaletteOpen(false);
-      } else if (e.key === 'ArrowDown') {
+      } else if (e.key === 'ArrowDown' && filteredResults.length > 0) {
         e.preventDefault();
         setSelectedIndex((prev) => (prev + 1) % filteredResults.length);
-      } else if (e.key === 'ArrowUp') {
+      } else if (e.key === 'ArrowUp' && filteredResults.length > 0) {
         e.preventDefault();
         setSelectedIndex((prev) => (prev - 1 + filteredResults.length) % filteredResults.length);
       } else if (e.key === 'Enter') {
@@ -169,26 +201,71 @@ export default function CommandPalette() {
 
   if (!commandPaletteOpen) return null;
 
-  // Search filter both Notes and Static Commands
-  const filteredNotes = activeNotes.filter((n) => {
-    const q = query.toLowerCase().trim();
-    return q ? (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q) : false;
-  }).map((n) => ({
-    id: `note-${n.id}`,
-    label: n.title || t.untitled,
+  // Unified fuzzy search across commands, note titles/bodies/tags and tags.
+  const rawQuery = query.trim();
+  const normalizedQuery = normalizeText(rawQuery).toLowerCase();
+
+  const tagList = Array.from(
+    new Set([
+      ...tagRecords.map((tag) => tag.name),
+      ...activeNotes.flatMap((note) =>
+        note.isEncrypted ? decryptedNotes[note.id]?.tags || [] : note.tags || []
+      )
+    ])
+  ).sort((a, b) => a.localeCompare(b));
+
+  const noteResults = activeNotes
+    .map((note) => {
+      const plain = note.isEncrypted ? decryptedNotes[note.id] : undefined;
+      const title = note.isEncrypted ? plain?.title || 'Locked Note' : note.title || t.untitled;
+      const content = note.isEncrypted ? plain?.content || '' : note.content || '';
+      const noteTags = note.isEncrypted ? plain?.tags || [] : note.tags || [];
+      const score = normalizedQuery
+        ? Math.max(
+            fuzzyScore(normalizeText(title).toLowerCase(), normalizedQuery) * 2,
+            fuzzyScore(normalizeText(content).toLowerCase(), normalizedQuery),
+            fuzzyScore(normalizeText(noteTags.join(' ')).toLowerCase(), normalizedQuery)
+          )
+        : note.updatedAt;
+      return { note, title, content, score };
+    })
+    .filter((entry) => (normalizedQuery ? entry.score > 0 : true))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, normalizedQuery ? 8 : 5);
+
+  const noteItems: PaletteItem[] = noteResults.map(({ note, title, content }) => ({
+    id: `note-${note.id}`,
+    label: title,
     icon: FileText,
-    action: () => {
-      setActiveNoteId(n.id);
-    },
-    subtitle: n.content ? n.content.substring(0, 50) : ''
+    action: () => setActiveNoteId(note.id),
+    subtitle: content ? content.substring(0, 60) : normalizedQuery ? '' : 'Recently edited'
   }));
 
-  const filteredCommands = commands.filter((c) => {
-    const q = query.toLowerCase().trim();
-    return q ? c.label.toLowerCase().includes(q) : true;
-  });
+  const commandItems = commands.filter((command) =>
+    normalizedQuery
+      ? fuzzyScore(normalizeText(command.label).toLowerCase(), normalizedQuery) > 0
+      : true
+  );
 
-  const filteredResults: PaletteItem[] = [...filteredCommands, ...filteredNotes];
+  const tagItems: PaletteItem[] = normalizedQuery
+    ? tagList
+        .map((tag) => ({ tag, score: fuzzyScore(normalizeText(tag).toLowerCase(), normalizedQuery) }))
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 4)
+        .map(({ tag }) => ({
+          id: `tag-${tag}`,
+          label: `#${tag}`,
+          icon: Hash,
+          subtitle: 'Filter notes by tag',
+          action: () => {
+            setActiveCategory(`tag:${tag}`);
+            setActiveNoteId(null);
+          }
+        }))
+    : [];
+
+  const filteredResults: PaletteItem[] = [...commandItems, ...noteItems, ...tagItems];
 
   const handleExecute = (item: any) => {
     item.action();
@@ -198,12 +275,12 @@ export default function CommandPalette() {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center pt-[15vh] px-4"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center pt-[8dvh] md:pt-[15vh] px-4 pb-[env(safe-area-inset-bottom)]"
       onClick={() => setCommandPaletteOpen(false)}
     >
       <div 
         ref={containerRef}
-        className="w-full max-w-xl bg-white dark:bg-[#16171B] border border-stone-200 dark:border-stone-800 rounded shadow-2xl overflow-hidden flex flex-col h-fit max-h-[50vh]"
+        className="w-full max-w-xl bg-white dark:bg-[#16171B] border border-stone-200 dark:border-stone-800 rounded shadow-2xl overflow-hidden flex flex-col h-fit max-h-[min(75dvh,560px)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Header */}
@@ -230,7 +307,7 @@ export default function CommandPalette() {
         </div>
 
         {/* Results List */}
-        <div className="overflow-y-auto max-h-[35vh] p-2 flex flex-col gap-0.5">
+        <div className="overflow-y-auto max-h-[min(58dvh,420px)] p-2 flex flex-col gap-0.5">
           {filteredResults.length === 0 ? (
             <div className="text-center py-8 text-stone-400 text-sm italic">
               {t.noResults}
@@ -249,7 +326,7 @@ export default function CommandPalette() {
                     ${isRtl ? 'flex-row-reverse' : 'flex-row'}
                     ${isSelected 
                       ? 'bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold border-stone-200' 
-                      : 'text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850/40'}`}
+                      : 'text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/40'}`}
                 >
                   <div className={`flex items-center gap-3 min-w-0
                     ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}

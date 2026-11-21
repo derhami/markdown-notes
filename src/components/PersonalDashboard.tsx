@@ -174,7 +174,7 @@ export default function PersonalDashboard() {
   const activeFoldersCount = new Set(visibleNotes.map(n => n.folderId).filter(Boolean)).size;
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-[#F2F3F8] dark:bg-[#111214] px-6 py-12 md:px-16 lg:px-24 flex flex-col justify-start select-none animate-fade-in transition-colors duration-200">
+    <div className="flex-1 h-full overflow-y-auto bg-[#F2F3F8] dark:bg-[#111214] px-5 py-10 sm:px-8 md:py-12 lg:px-16 flex flex-col justify-start select-none animate-fade-in transition-colors duration-200">
       <div className="max-w-[840px] w-full mx-auto flex flex-col gap-10">
         
         {/* Header Greeting Section */}
@@ -183,7 +183,7 @@ export default function PersonalDashboard() {
             <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-[0.2em] block leading-none">
               {getGreeting()}, writer
             </span>
-            <h1 className="text-3xl font-normal font-serif text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-normal font-serif text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
               Personal Writing Overview
             </h1>
           </div>
@@ -340,9 +340,9 @@ export default function PersonalDashboard() {
                 <h3 className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest leading-none">
                   Writing Activity
                 </h3>
-                <div className="grid grid-cols-3 gap-4 border border-stone-200/50 dark:border-[#2E3039] p-4 rounded-sm bg-white dark:bg-[#1A1B1E]">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 border border-stone-200/50 dark:border-[#2E3039] p-3 sm:p-4 rounded-sm bg-white dark:bg-[#1A1B1E]">
                   <div className="flex flex-col">
-                    <span className="text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
+                    <span className="text-lg sm:text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
                       {totalNotesCount}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">
@@ -350,7 +350,7 @@ export default function PersonalDashboard() {
                     </span>
                   </div>
                   <div className="flex flex-col border-s border-stone-200/50 dark:border-[#2E3039] ps-4">
-                    <span className="text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
+                    <span className="text-lg sm:text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
                       {totalWords.toLocaleString()}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">
@@ -358,7 +358,7 @@ export default function PersonalDashboard() {
                     </span>
                   </div>
                   <div className="flex flex-col border-s border-stone-200/50 dark:border-[#2E3039] ps-4">
-                    <span className="text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
+                    <span className="text-lg sm:text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
                       {activeFoldersCount}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">

@@ -16,7 +16,12 @@
 // that could never decrypt notes locked with the main password.
 
 const VERIFIER_PLAINTEXT = 'markdown-notes-vault-unlocked-v1';
-const PBKDF2_ITERATIONS = 100000;
+
+// Vaults created before iteration-counting existed used 100k rounds and did not
+// persist the count. New vaults use a stronger work factor; old vaults are
+// transparently upgraded on the next successful password unlock.
+export const LEGACY_PBKDF2_ITERATIONS = 100_000;
+export const CURRENT_PBKDF2_ITERATIONS = 600_000;
 
 // Helper to convert string to ArrayBuffer (UTF-8)
 function stringToBuffer(str: string): Uint8Array {
@@ -60,7 +65,11 @@ export function generateRandomBytesBase64(size: number): string {
 }
 
 // Derive CryptoKey from password and salt using PBKDF2
-async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
+async function deriveKey(
+  password: string,
+  salt: Uint8Array,
+  iterations: number = LEGACY_PBKDF2_ITERATIONS
+): Promise<CryptoKey> {
   const baseKey = await window.crypto.subtle.importKey(
     'raw',
     stringToBuffer(password),
@@ -73,7 +82,7 @@ async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey>
     {
       name: 'PBKDF2',
       salt: salt,
-      iterations: PBKDF2_ITERATIONS,
+      iterations: iterations,
       hash: 'SHA-256'
     },
     baseKey,
@@ -84,9 +93,13 @@ async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey>
 }
 
 // Derive an AES-GCM key from a secret (password or recovery key) + base64 salt
-export async function deriveKeyFromSecret(secret: string, saltB64: string): Promise<CryptoKey> {
+export async function deriveKeyFromSecret(
+  secret: string,
+  saltB64: string,
+  iterations: number = LEGACY_PBKDF2_ITERATIONS
+): Promise<CryptoKey> {
   const salt = base64ToBuffer(saltB64);
-  return deriveKey(secret, salt);
+  return deriveKey(secret, salt, iterations);
 }
 
 // Low-level encrypt returning { ciphertext, iv } as base64 strings
@@ -174,7 +187,8 @@ export async function unwrapMasterKey(
  */
 export async function setupVault(
   password: string,
-  recoveryKey: string
+  recoveryKey: string,
+  iterations: number = CURRENT_PBKDF2_ITERATIONS
 ): Promise<{
   salt: string;
   verifier: string;
@@ -182,18 +196,19 @@ export async function setupVault(
   recoveryVerifier: string;
   wrappedMasterKey: string;
   wrappedMasterKeyRecovery: string;
+  iterations: number;
 }> {
   const masterKey = await generateMasterKey();
 
   // Wrap with the password-derived key
   const salt = generateRandomBytes(16);
-  const passwordKey = await deriveKey(password, salt);
+  const passwordKey = await deriveKey(password, salt, iterations);
   const verifier = await encryptData(VERIFIER_PLAINTEXT, passwordKey);
   const wrapped = await wrapMasterKey(masterKey, passwordKey);
 
   // Wrap with the recovery-key-derived key
   const recoverySalt = generateRandomBytes(16);
-  const recoveryKeyDerived = await deriveKey(recoveryKey, recoverySalt);
+  const recoveryKeyDerived = await deriveKey(recoveryKey, recoverySalt, iterations);
   const recoveryVerifier = await encryptData(VERIFIER_PLAINTEXT, recoveryKeyDerived);
   const wrappedRecovery = await wrapMasterKey(masterKey, recoveryKeyDerived);
 
@@ -203,7 +218,8 @@ export async function setupVault(
     recoverySalt: bufferToBase64(recoverySalt.buffer),
     recoveryVerifier: `${recoveryVerifier.iv}:${recoveryVerifier.ciphertext}`,
     wrappedMasterKey: `${wrapped.iv}:${wrapped.ciphertext}`,
-    wrappedMasterKeyRecovery: `${wrappedRecovery.iv}:${wrappedRecovery.ciphertext}`
+    wrappedMasterKeyRecovery: `${wrappedRecovery.iv}:${wrappedRecovery.ciphertext}`,
+    iterations
   };
 }
 
@@ -214,14 +230,15 @@ export async function setupVault(
 export async function verifyVaultPassword(
   password: string,
   saltB64: string,
-  verifierPayload: string
+  verifierPayload: string,
+  iterations: number = LEGACY_PBKDF2_ITERATIONS
 ): Promise<CryptoKey | null> {
   try {
     const salt = base64ToBuffer(saltB64);
     const [iv, ciphertext] = verifierPayload.split(':');
     if (!iv || !ciphertext) return null;
 
-    const key = await deriveKey(password, salt);
+    const key = await deriveKey(password, salt, iterations);
     const decrypted = await decryptData(ciphertext, iv, key);
     if (bufferToString(decrypted) === VERIFIER_PLAINTEXT) {
       return key;
@@ -240,12 +257,36 @@ export async function unlockWithPassword(
   password: string,
   saltB64: string,
   verifierPayload: string,
-  wrappedMasterKey: string
+  wrappedMasterKey: string,
+  iterations: number = LEGACY_PBKDF2_ITERATIONS
 ): Promise<CryptoKey | null> {
-  const key = await verifyVaultPassword(password, saltB64, verifierPayload);
+  const key = await verifyVaultPassword(password, saltB64, verifierPayload, iterations);
   if (!key) return null;
   const masterKey = await unwrapMasterKey(wrappedMasterKey, key);
   return masterKey;
+}
+
+/**
+ * Re-wrap the existing master key with a stronger KDF configuration. Called
+ * right after a successful unlock of a legacy vault, so users are upgraded
+ * without re-encrypting a single note.
+ */
+export async function upgradeVaultKdf(
+  password: string,
+  masterKey: CryptoKey,
+  iterations: number = CURRENT_PBKDF2_ITERATIONS
+): Promise<{ salt: string; verifier: string; wrappedMasterKey: string; iterations: number }> {
+  const salt = generateRandomBytes(16);
+  const passwordKey = await deriveKey(password, salt, iterations);
+  const verifier = await encryptData(VERIFIER_PLAINTEXT, passwordKey);
+  const wrapped = await wrapMasterKey(masterKey, passwordKey);
+
+  return {
+    salt: bufferToBase64(salt.buffer),
+    verifier: `${verifier.iv}:${verifier.ciphertext}`,
+    wrappedMasterKey: `${wrapped.iv}:${wrapped.ciphertext}`,
+    iterations
+  };
 }
 
 /**
@@ -256,9 +297,15 @@ export async function unlockWithRecoveryKey(
   recoveryKey: string,
   recoverySaltB64: string,
   recoveryVerifierPayload: string,
-  wrappedMasterKeyRecovery: string
+  wrappedMasterKeyRecovery: string,
+  iterations: number = LEGACY_PBKDF2_ITERATIONS
 ): Promise<CryptoKey | null> {
-  const key = await verifyVaultPassword(recoveryKey, recoverySaltB64, recoveryVerifierPayload);
+  const key = await verifyVaultPassword(
+    recoveryKey,
+    recoverySaltB64,
+    recoveryVerifierPayload,
+    iterations
+  );
   if (!key) return null;
   const masterKey = await unwrapMasterKey(wrappedMasterKeyRecovery, key);
   return masterKey;
@@ -271,21 +318,24 @@ export async function unlockWithRecoveryKey(
  */
 export async function registerRecoveryKey(
   recoveryKey: string,
-  masterKey: CryptoKey
+  masterKey: CryptoKey,
+  iterations: number = CURRENT_PBKDF2_ITERATIONS
 ): Promise<{
   recoverySalt: string;
   recoveryVerifier: string;
   wrappedMasterKeyRecovery: string;
+  iterations: number;
 }> {
   const recoverySalt = generateRandomBytes(16);
-  const recoveryKeyDerived = await deriveKey(recoveryKey, recoverySalt);
+  const recoveryKeyDerived = await deriveKey(recoveryKey, recoverySalt, iterations);
   const recoveryVerifier = await encryptData(VERIFIER_PLAINTEXT, recoveryKeyDerived);
   const wrappedRecovery = await wrapMasterKey(masterKey, recoveryKeyDerived);
 
   return {
     recoverySalt: bufferToBase64(recoverySalt.buffer),
     recoveryVerifier: `${recoveryVerifier.iv}:${recoveryVerifier.ciphertext}`,
-    wrappedMasterKeyRecovery: `${wrappedRecovery.iv}:${wrappedRecovery.ciphertext}`
+    wrappedMasterKeyRecovery: `${wrappedRecovery.iv}:${wrappedRecovery.ciphertext}`,
+    iterations
   };
 }
 
@@ -299,6 +349,7 @@ export interface PasswordChangeResult {
   salt: string;
   verifier: string;
   wrappedMasterKey: string;
+  iterations: number;
 }
 
 export async function changeVaultPassword(
@@ -306,16 +357,24 @@ export async function changeVaultPassword(
   newPassword: string,
   saltB64: string,
   verifierPayload: string,
-  wrappedMasterKey: string
+  wrappedMasterKey: string,
+  currentIterations: number = LEGACY_PBKDF2_ITERATIONS
 ): Promise<PasswordChangeResult | null> {
-  const oldKey = await verifyVaultPassword(oldPassword, saltB64, verifierPayload);
+  const oldKey = await verifyVaultPassword(
+    oldPassword,
+    saltB64,
+    verifierPayload,
+    currentIterations
+  );
   if (!oldKey) return null;
 
   const masterKey = await unwrapMasterKey(wrappedMasterKey, oldKey);
   if (!masterKey) return null;
 
+  // Rotating the password is also a good moment to strengthen the KDF.
+  const iterations = CURRENT_PBKDF2_ITERATIONS;
   const newSalt = generateRandomBytes(16);
-  const newPasswordKey = await deriveKey(newPassword, newSalt);
+  const newPasswordKey = await deriveKey(newPassword, newSalt, iterations);
   const newVerifier = await encryptData(VERIFIER_PLAINTEXT, newPasswordKey);
   const newWrapped = await wrapMasterKey(masterKey, newPasswordKey);
 
@@ -323,7 +382,8 @@ export async function changeVaultPassword(
     masterKey,
     salt: bufferToBase64(newSalt.buffer),
     verifier: `${newVerifier.iv}:${newVerifier.ciphertext}`,
-    wrappedMasterKey: `${newWrapped.iv}:${newWrapped.ciphertext}`
+    wrappedMasterKey: `${newWrapped.iv}:${newWrapped.ciphertext}`,
+    iterations
   };
 }
 
