@@ -82,8 +82,9 @@ jobs:
               SDKMANAGER=$(find "$ANDROID_HOME" -type f -name sdkmanager | head -n 1)
             fi
             echo "sdkmanager=$SDKMANAGER"
-            yes | "$SDKMANAGER" --licenses
-            "$SDKMANAGER" --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+            (yes | "$SDKMANAGER" --licenses) || true
+            (yes | "$SDKMANAGER" --install "platforms;android-36" "build-tools;36.0.0" "platform-tools") || true
+            test -d "$ANDROID_HOME/platforms/android-36"
             echo "sdk.dir=$ANDROID_HOME" > android/local.properties
             cd android
             chmod +x gradlew
@@ -102,9 +103,11 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           if [ -f /tmp/build.log ]; then
-            tail -n 8 /tmp/build.log | while IFS= read -r line; do
-              echo "::error::$(printf '%s' "$line" | cut -c1-700)"
-            done
+            grep -nE 'FAILURE|error:|Error|Could not|Exception|What went wrong|failed' /tmp/build.log \
+              | tail -n 8 \
+              | while IFS= read -r line; do
+                  echo "::error::$(printf '%s' "$line" | cut -c1-700)"
+                done
           else
             echo '::error::no build log was captured'
           fi
