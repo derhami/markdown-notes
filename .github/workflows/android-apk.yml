@@ -16,7 +16,7 @@ on:
       - '.github/workflows/android-apk.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   apk:
@@ -64,10 +64,14 @@ jobs:
           {
             echo "ANDROID_HOME=$ANDROID_HOME"
             echo "JAVA_HOME=$JAVA_HOME"
-            command -v sdkmanager || echo 'sdkmanager not on PATH'
             java -version
-            yes | sdkmanager --licenses
-            sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+            SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+            if [ ! -x "$SDKMANAGER" ]; then
+              SDKMANAGER=$(find "$ANDROID_HOME" -type f -name sdkmanager | head -n 1)
+            fi
+            echo "sdkmanager=$SDKMANAGER"
+            yes | "$SDKMANAGER" --licenses
+            "$SDKMANAGER" --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
             echo "sdk.dir=$ANDROID_HOME" > android/local.properties
             cd android
             chmod +x gradlew
@@ -85,6 +89,24 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           test "${{ steps.build.outcome }}" = "success"
+
+      # A public, unauthenticated copy of the failing log so it can be read
+      # without repository admin rights.
+      - name: Publish failure log to a branch
+        if: always() && steps.build.outcome != 'success'
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "ci-logger"
+          git config --global user.email "ci-logger@users.noreply.github.com"
+          cd "$RUNNER_TEMP"
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" logrepo
+          cd logrepo
+          cp /tmp/build.log apk-build-error.log
+          git checkout -b "ci-log-${GITHUB_RUN_ID}"
+          git add apk-build-error.log
+          git commit -m "APK build log for run ${GITHUB_RUN_ID}"
+          git push origin "ci-log-${GITHUB_RUN_ID}"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
