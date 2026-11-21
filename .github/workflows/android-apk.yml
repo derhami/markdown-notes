@@ -65,10 +65,26 @@ jobs:
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
       - name: Assemble debug APK
+        id: assemble
         working-directory: android
+        continue-on-error: true
         run: |
+          set -o pipefail
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
+
+      # The job log is private; a failing build publishes its tail here so the
+      # error is visible from the public run page.
+      - name: Report Gradle failure
+        if: always() && steps.assemble.outcome != 'success'
+        run: |
+          {
+            echo '### Gradle build failed'
+            echo '```'
+            tail -n 80 /tmp/gradle.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
