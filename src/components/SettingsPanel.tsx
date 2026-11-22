@@ -58,6 +58,26 @@ export default function SettingsPanel() {
   
   // Storage Metrics
   const notes = useLiveQuery(() => db.notes.toArray()) || [];
+
+  // Browser storage quota estimate
+  const [storageEstimate, setStorageEstimate] = React.useState<{ usage: number; quota: number } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const loadEstimate = async () => {
+      try {
+        if (navigator.storage && typeof navigator.storage.estimate === 'function') {
+          const est = await navigator.storage.estimate();
+          if (!cancelled) {
+            setStorageEstimate({ usage: est.usage || 0, quota: est.quota || 0 });
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    loadEstimate();
+    return () => { cancelled = true; };
+  }, []);
   const folders = useLiveQuery(() => db.folders.toArray()) || [];
   const tags = useLiveQuery(() => db.tags.toArray()) || [];
 
@@ -153,6 +173,11 @@ export default function SettingsPanel() {
       link.click();
       
       showToast(`${backupIsEncrypted ? 'Secure encrypted' : 'Plaintext'} backup archive exported`, 'success');
+      try {
+        localStorage.setItem('markdownnotes:last-backup', String(Date.now()));
+      } catch {
+        /* ignore */
+      }
     } catch (err) {
       console.error(err);
       showToast('Failed to export backup', 'error');
@@ -732,6 +757,33 @@ export default function SettingsPanel() {
         <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">App version</span>
         <span className="text-xs font-mono text-stone-500 dark:text-stone-400">{__APP_VERSION__}</span>
       </div>
+
+      {/* Storage quota */}
+      {storageEstimate && storageEstimate.quota > 0 && (
+        <div className="flex flex-col gap-2 border-t border-stone-100 dark:border-[#2E3039] pt-4">
+          <div className="flex items-center justify-between text-xs font-semibold text-stone-700 dark:text-stone-300">
+            <span>Local storage used</span>
+            <span className="font-mono text-[11px] text-stone-400">
+              {(storageEstimate.usage / (1024 * 1024)).toFixed(1)} MB / {(storageEstimate.quota / (1024 * 1024)).toFixed(0)} MB
+            </span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-stone-200 dark:bg-[#2E3039] overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                storageEstimate.usage / storageEstimate.quota > 0.8
+                  ? 'bg-rose-500'
+                  : 'bg-[var(--accent)] dark:bg-[var(--accent-dark)]'
+              }`}
+              style={{ width: `${Math.min(100, (storageEstimate.usage / storageEstimate.quota) * 100)}%` }}
+            />
+          </div>
+          {storageEstimate.usage / storageEstimate.quota > 0.8 && (
+            <p className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold leading-relaxed">
+              Storage is almost full. Consider exporting a backup or removing unused notes.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Core metrics grid */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3 border-t border-stone-100 dark:border-[#2E3039] pt-4">

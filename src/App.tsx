@@ -105,6 +105,15 @@ export default function App() {
       try {
         await initializeDemoData();
         await loadSettings();
+        try {
+          const lastBackup = Number(localStorage.getItem('markdownnotes:last-backup') || 0);
+          const sevenDays = 7 * 24 * 60 * 60 * 1000;
+          if (!lastBackup || Date.now() - lastBackup > sevenDays) {
+            useToastStore.getState().showToast('No recent backup. Consider exporting a backup.', 'info');
+          }
+        } catch {
+          /* ignore */
+        }
         await useVaultStore.getState().initVaultState();
         await useSyncStore.getState().init();
         setDbReady(true);
