@@ -220,6 +220,21 @@ body {
   }
 }
 
+/* Print / Export as PDF: hide app chrome, print the document canvas. */
+@media print {
+  .app-shell { height: auto !important; }
+  body { background: #fff !important; }
+  /* Hide navigation rails, bottom nav, toolbars and modals */
+  .mobile-tabs,
+  nav,
+  aside,
+  [data-print-hide='true'] { display: none !important; }
+  /* Hide editor chrome keepers */
+  button, input, textarea { display: none !important; }
+  /* Show the rendered markdown */
+  .markdown-body { color: #111 !important; }
+}
+
 /* Visible keyboard focus everywhere, without disturbing pointer users. */
 :where(button, a, [role='button'], input, textarea, select, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--accent);

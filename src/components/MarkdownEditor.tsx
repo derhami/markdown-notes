@@ -902,6 +902,19 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             </button>
           )}
 
+          {/* Print / Export PDF - Desktop only */}
+          {!isMobile && (
+            <button
+              type="button"
+              id="btn-editor-print"
+              onClick={() => window.print()}
+              title="Print / Export as PDF"
+              className="p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
+            >
+              <FileText className="w-4 h-4" />
+            </button>
+          )}
+
           {/* Distraction-Free Focus mode - Desktop only */}
           {!isMobile && (
             <button
@@ -1496,6 +1509,8 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
         <NoteHistory
           noteId={noteId}
           isEncrypted={!!note.isEncrypted}
+          currentContent={localContent}
+          currentTitle={localTitle}
           onClose={() => setShowHistory(false)}
           onRestore={(snapshot) => {
             setLocalTitle(snapshot.title);

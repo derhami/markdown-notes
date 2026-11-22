@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Star, Trash2, Folder as FolderIcon, Settings, Plus,
-  Search, Moon, Sun, Monitor, Archive, Pin, Hash, Clock
+  Search, Moon, Sun, Monitor, Archive, Pin, Hash, Clock, Network
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
@@ -16,6 +16,7 @@ import { useToastStore } from '../stores/useToastStore';
 import { useVaultStore } from '../stores/useVaultStore';
 import { generateId } from '../utils/id';
 import Modal from './Modal';
+import KnowledgeGraph from './KnowledgeGraph';
 import type { Folder, Tag, Note } from '../types';
 
 export default function Sidebar() {
@@ -38,6 +39,7 @@ export default function Sidebar() {
   // Folder & tag modal state
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
+  const [isGraphOpen, setIsGraphOpen] = useState(false);
   const [folderName, setFolderName] = useState('');
   const [parentFolderId, setParentFolderId] = useState<string | null>(null);
 
@@ -247,6 +249,17 @@ export default function Sidebar() {
           <Hash className="w-4.5 h-4.5" />
         </button>
 
+        {/* Knowledge graph */}
+        <button
+          type="button"
+          id="btn-rail-graph"
+          onClick={() => setIsGraphOpen(true)}
+          className="w-8.5 h-8.5 rounded-md flex items-center justify-center transition-all cursor-pointer text-stone-500 dark:text-stone-400 hover:bg-stone-200/40 dark:hover:bg-stone-800/40 hover:text-stone-900 dark:hover:text-stone-100"
+          title="Knowledge Graph"
+        >
+          <Network className="w-4.5 h-4.5" />
+        </button>
+
         {/* Archive List */}
         <button
           type="button"
@@ -356,6 +369,12 @@ export default function Sidebar() {
           </div>
         )}
       </Modal>
+
+      <KnowledgeGraph
+        open={isGraphOpen}
+        onClose={() => setIsGraphOpen(false)}
+        onOpenNote={(id) => setActiveNoteId(id)}
+      />
 
       {/* Preserved Modal structure so no functional features are lost */}
       <Modal

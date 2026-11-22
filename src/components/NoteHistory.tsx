@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { History, RotateCcw, X } from 'lucide-react';
 import { listNoteVersions, readNoteVersion, type VersionSnapshot } from '../utils/versions';
+import { diffLines, diffStats, type DiffLine } from '../utils/diff';
 import { useVaultStore } from '../stores/useVaultStore';
 import { useToastStore } from '../stores/useToastStore';
 import type { NoteVersion } from '../types';
@@ -13,6 +14,8 @@ import type { NoteVersion } from '../types';
 interface NoteHistoryProps {
   noteId: string;
   isEncrypted: boolean;
+  currentContent?: string;
+  currentTitle?: string;
   onClose: () => void;
   onRestore: (snapshot: VersionSnapshot) => void;
 }
@@ -27,13 +30,14 @@ function formatTime(timestamp: number): string {
   });
 }
 
-export default function NoteHistory({ noteId, isEncrypted, onClose, onRestore }: NoteHistoryProps) {
+export default function NoteHistory({ noteId, isEncrypted, currentContent, currentTitle, onClose, onRestore }: NoteHistoryProps) {
   const { derivedKey } = useVaultStore();
   const { showToast } = useToastStore();
   const [versions, setVersions] = useState<NoteVersion[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [preview, setPreview] = useState<VersionSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showDiff, setShowDiff] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -145,13 +149,55 @@ export default function NoteHistory({ noteId, isEncrypted, onClose, onRestore }:
           <div className="overflow-y-auto p-4 md:p-5 min-h-[140px]">
             {preview ? (
               <>
-                <p className="text-[11px] font-semibold text-stone-500 dark:text-stone-400 mb-2">
-                  {preview.title || 'Untitled'}
-                </p>
-                <pre className="whitespace-pre-wrap break-words font-mono text-[11.5px] leading-relaxed text-stone-700 dark:text-stone-300">
-                  {preview.content.slice(0, 4000)}
-                  {preview.content.length > 4000 ? '…' : ''}
-                </pre>
+                <div className="flex items-center justify-between mb-2 gap-2">
+                  <p className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                    {preview.title || 'Untitled'}
+                  </p>
+                  {typeof currentContent === 'string' && (
+                    <button
+                      type="button"
+                      onClick={() => setShowDiff((v) => !v)}
+                      className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border border-stone-200 dark:border-stone-800 text-stone-500 hover:text-[var(--accent)] dark:hover:text-[var(--accent-dark)] cursor-pointer"
+                    >
+                      {showDiff ? 'Hide diff' : 'Show diff vs current'}
+                    </button>
+                  )}
+                </div>
+                {showDiff && typeof currentContent === 'string' ? (
+                  (() => {
+                    const lines = diffLines(preview.content, currentContent);
+                    const stats = diffStats(lines);
+                    return (
+                      <div>
+                        <p className="text-[10px] text-stone-400 mb-2 font-mono">
+                          +{stats.added} / -{stats.removed}
+                        </p>
+                        <pre className="whitespace-pre-wrap break-words font-mono text-[11.5px] leading-relaxed">
+                          {lines.map((line, idx) => (
+                            <span
+                              key={idx}
+                              className={
+                                line.type === 'added'
+                                  ? 'block bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                                  : line.type === 'removed'
+                                  ? 'block bg-rose-500/10 text-rose-700 dark:text-rose-400 line-through'
+                                  : 'block text-stone-700 dark:text-stone-300'
+                              }
+                            >
+                              {line.type === 'added' ? '+ ' : line.type === 'removed' ? '- ' : '  '}
+                              {line.text}
+                            </span>
+                          ))}
+                        </pre>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <pre className="whitespace-pre-wrap break-words font-mono text-[11.5px] leading-relaxed text-stone-700 dark:text-stone-300">
+                    {preview.content.slice(0, 4000)}
+                    {preview.content.length > 4000 ? '…' : ''}
+                  </pre>
+                )}
               </>
             ) : (
               <p className="text-[11px] text-stone-400">Select a snapshot to preview it.</p>
