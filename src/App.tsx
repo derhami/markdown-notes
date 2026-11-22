@@ -411,7 +411,7 @@ export default function App() {
               await db.tags.add({
                 id: generateId(),
                 name: tagName,
-                color: '#1D2EA0',
+                color: 'var(--accent)',
                 createdAt: now
               });
             }
@@ -542,13 +542,13 @@ export default function App() {
               type="button"
               id="btn-desk-create"
               onClick={() => handleCreateNote(null)}
-              className="hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors flex items-center gap-1.5 cursor-pointer py-1"
+              className="hover:text-[var(--accent)] dark:hover:text-[var(--accent-dark)] transition-colors flex items-center gap-1.5 cursor-pointer py-1"
             >
               <Plus className="w-4 h-4" />
               <span>Create Document</span>
             </button>
             <span className="text-stone-200 dark:text-[#2E3039]">|</span>
-            <label className="hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors flex items-center gap-1.5 cursor-pointer py-1">
+            <label className="hover:text-[var(--accent)] dark:hover:text-[var(--accent-dark)] transition-colors flex items-center gap-1.5 cursor-pointer py-1">
               <FileUp className="w-4 h-4" />
               <span>Import Markdown</span>
               <input
@@ -572,9 +572,9 @@ export default function App() {
                 type="button"
                 id={`btn-continue-note-${recentNotes[0].id}`}
                 onClick={() => setActiveNoteId(recentNotes[0].id)}
-                className="group flex flex-col gap-1.5 w-full text-left py-4 px-5 rounded-sm border border-stone-200/40 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] hover:border-[#1D2EA0] dark:hover:border-[#A3B5F5] transition-all cursor-pointer shadow-[0_1px_6px_rgba(0,0,0,0.01)] dark:shadow-none"
+                className="group flex flex-col gap-1.5 w-full text-left py-4 px-5 rounded-sm border border-stone-200/40 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] hover:border-[var(--accent)] dark:hover:border-[var(--accent-dark)] transition-all cursor-pointer shadow-[0_1px_6px_rgba(0,0,0,0.01)] dark:shadow-none"
               >
-                <span className="text-base font-serif font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#1D2EA0] dark:group-hover:text-[#A3B5F5] transition-colors">
+                <span className="text-base font-serif font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[var(--accent)] dark:group-hover:text-[var(--accent-dark)] transition-colors">
                   {recentNotes[0].title || 'Untitled Document'}
                 </span>
                 <span className="text-[11px] text-stone-400 dark:text-stone-500 font-medium flex items-center gap-2">
@@ -650,9 +650,9 @@ export default function App() {
     >
       {/* Global Drag & Drop Overlay */}
       {isDragging && (
-        <div className="fixed inset-0 z-50 bg-[#1D2EA0]/10 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-8 pointer-events-none select-none">
+        <div className="fixed inset-0 z-50 bg-[var(--accent)]/10 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-8 pointer-events-none select-none">
           <div className="p-8 bg-white dark:bg-[#1A1B1E] rounded-sm border border-[#D1D4DC] dark:border-[#2E3039] shadow-2xl flex flex-col items-center gap-3 text-center max-w-sm">
-            <div className="p-3 bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] rounded-sm">
+            <div className="p-3 bg-[#F2F3F8] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)] rounded-sm">
               <FileUp className="w-6 h-6 animate-bounce" />
             </div>
             <div>
@@ -683,10 +683,10 @@ export default function App() {
             <div 
               onMouseDown={startResizing}
               className={`w-1 -mx-[2px] h-full cursor-col-resize relative z-30 transition-all shrink-0 select-none group
-                bg-transparent hover:bg-[#1D2EA0]/20 dark:hover:bg-[#A3B5F5]/20`}
+                bg-transparent hover:bg-[var(--accent)]/20 dark:hover:bg-[var(--accent-dark)]/20`}
               title="Drag to resize"
             >
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-transparent group-hover:bg-[#1D2EA0] dark:group-hover:bg-[#A3B5F5] transition-colors" />
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-transparent group-hover:bg-[var(--accent)] dark:group-hover:bg-[var(--accent-dark)] transition-colors" />
             </div>
           )}
         </>
@@ -728,7 +728,7 @@ export default function App() {
               }}
               aria-label="Home"
               className={`flex flex-col items-center justify-center gap-0.5 h-full cursor-pointer
-                ${mobileHome && activeNoteId === null ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
+                ${mobileHome && activeNoteId === null ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : 'text-stone-400 dark:text-stone-500'}`}
             >
               <House className="w-[21px] h-[21px]" strokeWidth={mobileHome && activeNoteId === null ? 2.2 : 1.8} />
               <span className="text-[9px] font-bold uppercase tracking-wide">Home</span>
@@ -743,7 +743,7 @@ export default function App() {
               }}
               aria-label="Notes"
               className={`flex flex-col items-center justify-center gap-0.5 h-full cursor-pointer
-                ${!mobileHome && (activeCategory === 'all' || activeCategory === 'favorites' || activeCategory === 'pinned' || activeCategory === 'recent' || activeCategory === 'archive' || activeCategory === 'trash' || activeCategory.startsWith('tag:')) ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
+                ${!mobileHome && (activeCategory === 'all' || activeCategory === 'favorites' || activeCategory === 'pinned' || activeCategory === 'recent' || activeCategory === 'archive' || activeCategory === 'trash' || activeCategory.startsWith('tag:')) ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : 'text-stone-400 dark:text-stone-500'}`}
             >
               <FileText className="w-[21px] h-[21px]" strokeWidth={!mobileHome ? 2.2 : 1.8} />
               <span className="text-[9px] font-bold uppercase tracking-wide">Notes</span>
@@ -757,7 +757,7 @@ export default function App() {
                   void handleCreateNote(null);
                 }}
                 aria-label="Create note"
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white dark:text-[#111214] shadow-lg shadow-[#1D2EA0]/25 active:scale-95 transition-transform -mt-1 cursor-pointer"
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white dark:text-[#111214] shadow-lg shadow-[var(--accent)]/25 active:scale-95 transition-transform -mt-1 cursor-pointer"
               >
                 <Plus className="w-5 h-5" strokeWidth={2.4} />
               </button>
@@ -772,7 +772,7 @@ export default function App() {
               }}
               aria-label="Folders"
               className={`flex flex-col items-center justify-center gap-0.5 h-full cursor-pointer
-                ${!mobileHome && (activeCategory === 'folders' || activeCategory.startsWith('folder:')) ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
+                ${!mobileHome && (activeCategory === 'folders' || activeCategory.startsWith('folder:')) ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : 'text-stone-400 dark:text-stone-500'}`}
             >
               <Folder className="w-[21px] h-[21px]" strokeWidth={!mobileHome && activeCategory === 'folders' ? 2.2 : 1.8} />
               <span className="text-[9px] font-bold uppercase tracking-wide">Folders</span>
@@ -783,7 +783,7 @@ export default function App() {
               onClick={() => setActiveNoteId('settings')}
               aria-label="Settings"
               className={`flex flex-col items-center justify-center gap-0.5 h-full cursor-pointer
-                ${activeNoteId === 'settings' ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`}
+                ${activeNoteId === 'settings' ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : 'text-stone-400 dark:text-stone-500'}`}
             >
               <Settings className="w-[21px] h-[21px]" strokeWidth={activeNoteId === 'settings' ? 2.2 : 1.8} />
               <span className="text-[9px] font-bold uppercase tracking-wide">Settings</span>

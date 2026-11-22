@@ -83,6 +83,7 @@ export interface Tag {
 export interface Settings {
   id?: string;
   theme: 'light' | 'dark' | 'system';
+  accentPreset?: string;
   language: 'en' | 'fa';
   editorFontSize: number;
   editorLineHeight: string;

@@ -34,7 +34,7 @@ type Tab = 'overview' | 'related' | 'ask';
 const TONE_STYLES: Record<string, string> = {
   good: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10',
   warn: 'text-amber-600 dark:text-amber-400 bg-amber-500/10',
-  info: 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#1D2EA0]/10'
+  info: 'text-[var(--accent)] dark:text-[var(--accent-dark)] bg-[var(--accent)]/10'
 };
 
 const TONE_ICONS: Record<string, React.ElementType> = {
@@ -212,7 +212,7 @@ export default function SmartAssistant() {
         {/* Header */}
         <div className="px-4 sm:px-6 py-3.5 border-b border-stone-100 dark:border-[#2E3039] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-1.5 rounded-sm bg-[#1D2EA0]/10 dark:bg-[#A3B5F5]/10 text-[#1D2EA0] dark:text-[#A3B5F5] shrink-0">
+            <div className="p-1.5 rounded-sm bg-[var(--accent)]/10 dark:bg-[var(--accent-dark)]/10 text-[var(--accent)] dark:text-[var(--accent-dark)] shrink-0">
               <Wand2 className="w-4 h-4" />
             </div>
             <div className="min-w-0">
@@ -253,7 +253,7 @@ export default function SmartAssistant() {
                 onClick={() => setTab(item.id)}
                 className={`flex-1 sm:flex-none sm:px-6 py-2.5 text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 border-b-2 transition-colors cursor-pointer
                   ${tab === item.id
-                    ? 'text-[#1D2EA0] dark:text-[#A3B5F5] border-[#1D2EA0] dark:border-[#A3B5F5]'
+                    ? 'text-[var(--accent)] dark:text-[var(--accent-dark)] border-[var(--accent)] dark:border-[var(--accent-dark)]'
                     : 'text-stone-400 dark:text-stone-500 border-transparent hover:text-stone-600 dark:hover:text-stone-300'}`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -303,7 +303,7 @@ export default function SmartAssistant() {
                         <button
                           type="button"
                           onClick={() => copyText(summary.map((line) => `• ${line}`).join('\n'), 'Summary copied')}
-                          className="flex items-center gap-1 text-[10px] font-bold text-stone-400 hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors cursor-pointer"
+                          className="flex items-center gap-1 text-[10px] font-bold text-stone-400 hover:text-[var(--accent)] dark:hover:text-[var(--accent-dark)] transition-colors cursor-pointer"
                         >
                           <Copy className="w-3 h-3" />
                           Copy
@@ -319,7 +319,7 @@ export default function SmartAssistant() {
                             key={index}
                             className="flex gap-2 text-xs leading-relaxed text-stone-700 dark:text-stone-300"
                           >
-                            <span className="mt-1.5 w-1 h-1 rounded-full bg-[#1D2EA0] dark:bg-[#A3B5F5] shrink-0" />
+                            <span className="mt-1.5 w-1 h-1 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-dark)] shrink-0" />
                             <span dir="auto">{sentence}</span>
                           </li>
                         ))}
@@ -359,7 +359,7 @@ export default function SmartAssistant() {
                             title={suggestion.isExisting ? 'Filter by this tag' : 'Add this tag to the current note'}
                             className={`flex items-center gap-1 px-2 py-1 rounded-sm border text-[10px] font-semibold transition-colors cursor-pointer
                               ${suggestion.isExisting
-                                ? 'border-[#1D2EA0]/30 dark:border-[#A3B5F5]/30 bg-[#1D2EA0]/10 dark:bg-[#A3B5F5]/10 text-[#1D2EA0] dark:text-[#A3B5F5]'
+                                ? 'border-[var(--accent)]/30 dark:border-[var(--accent-dark)]/30 bg-[var(--accent)]/10 dark:bg-[var(--accent-dark)]/10 text-[var(--accent)] dark:text-[var(--accent-dark)]'
                                 : 'border-stone-200 dark:border-[#2E3039] text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
                           >
                             <Tag className="w-2.5 h-2.5" />
@@ -423,13 +423,13 @@ export default function SmartAssistant() {
                     key={hit.id}
                     type="button"
                     onClick={() => openNote(hit.id)}
-                    className="group text-left p-3 rounded-sm border border-stone-200/60 dark:border-[#2E3039] hover:border-[#1D2EA0] dark:hover:border-[#A3B5F5] bg-white dark:bg-[#1A1B1E] transition-colors cursor-pointer"
+                    className="group text-left p-3 rounded-sm border border-stone-200/60 dark:border-[#2E3039] hover:border-[var(--accent)] dark:hover:border-[var(--accent-dark)] bg-white dark:bg-[#1A1B1E] transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-serif font-bold text-stone-800 dark:text-stone-100 truncate group-hover:text-[#1D2EA0] dark:group-hover:text-[#A3B5F5]">
+                      <span className="text-xs font-serif font-bold text-stone-800 dark:text-stone-100 truncate group-hover:text-[var(--accent)] dark:group-hover:text-[var(--accent-dark)]">
                         {hit.title || 'Untitled Document'}
                       </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-stone-300 dark:text-stone-600 group-hover:text-[#1D2EA0] dark:group-hover:text-[#A3B5F5] shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-stone-300 dark:text-stone-600 group-hover:text-[var(--accent)] dark:group-hover:text-[var(--accent-dark)] shrink-0" />
                     </div>
                     <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-1 leading-relaxed line-clamp-2" dir="auto">
                       {hit.snippet}
@@ -451,7 +451,7 @@ export default function SmartAssistant() {
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="What do my notes say about…?"
                   aria-label="Ask your notes"
-                  className="w-full py-2.5 ps-9 pe-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all"
+                  className="w-full py-2.5 ps-9 pe-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all"
                 />
               </div>
               <p className="text-[10px] text-stone-400 dark:text-stone-500 leading-relaxed">
@@ -469,10 +469,10 @@ export default function SmartAssistant() {
                   key={hit.id}
                   type="button"
                   onClick={() => openNote(hit.id)}
-                  className="group text-left p-3 rounded-sm border border-stone-200/60 dark:border-[#2E3039] hover:border-[#1D2EA0] dark:hover:border-[#A3B5F5] bg-white dark:bg-[#1A1B1E] transition-colors cursor-pointer"
+                  className="group text-left p-3 rounded-sm border border-stone-200/60 dark:border-[#2E3039] hover:border-[var(--accent)] dark:hover:border-[var(--accent-dark)] bg-white dark:bg-[#1A1B1E] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-serif font-bold text-stone-800 dark:text-stone-100 truncate group-hover:text-[#1D2EA0] dark:group-hover:text-[#A3B5F5]">
+                    <span className="text-xs font-serif font-bold text-stone-800 dark:text-stone-100 truncate group-hover:text-[var(--accent)] dark:group-hover:text-[var(--accent-dark)]">
                       {hit.title || 'Untitled Document'}
                     </span>
                     <span className="text-[9px] font-bold uppercase tracking-wider text-stone-300 dark:text-stone-600 shrink-0">

@@ -206,7 +206,7 @@ async function ensureTags(tags: string[]): Promise<void> {
     await db.tags.add({
       id: generateId(),
       name: tag,
-      color: '#1D2EA0',
+      color: 'var(--accent)',
       createdAt: Date.now()
     });
   }

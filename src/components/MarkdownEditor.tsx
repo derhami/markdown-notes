@@ -692,12 +692,12 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               type="password"
               name="vault_editor_pass"
               placeholder="Vault Password"
-              className="w-full py-2 px-3 border border-stone-200 dark:border-[#2E3039] bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 rounded-sm text-xs outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
+              className="w-full py-2 px-3 border border-stone-200 dark:border-[#2E3039] bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 rounded-sm text-xs outline-none focus:border-[var(--accent)] dark:focus:border-[var(--accent-dark)]"
               autoFocus
             />
             <button
               type="submit"
-              className="w-full py-2 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white font-bold text-xs rounded-sm hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer text-center"
+              className="w-full py-2 bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white font-bold text-xs rounded-sm hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer text-center"
             >
               Decrypt & Edit
             </button>
@@ -829,7 +829,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
             onClick={() => setShowToolbar(!showToolbar)}
             title="Toggle Markdown Toolbar (Ctrl+/)"
             className={`hidden md:inline-flex p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer
-              ${showToolbar ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : ''}`}
+              ${showToolbar ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : ''}`}
           >
             <Sparkles className="w-4 h-4" />
           </button>
@@ -911,7 +911,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Focus Mode"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${focusMode 
-                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-800' 
+                  ? 'text-[var(--accent)] dark:text-[var(--accent-dark)] bg-[#E8E9EE] dark:bg-stone-800' 
                   : 'text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400'}`}
             >
               <CloudLightning className="w-4 h-4" />
@@ -927,7 +927,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Zen Mode (ESC to exit)"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${zenMode 
-                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-800' 
+                  ? 'text-[var(--accent)] dark:text-[var(--accent-dark)] bg-[#E8E9EE] dark:bg-stone-800' 
                   : 'text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400'}`}
             >
               {zenMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -943,7 +943,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               title="Outline & Metadata Panel"
               className={`p-1.5 rounded transition-colors cursor-pointer
                 ${tocOpen 
-                  ? 'text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#E8E9EE] dark:bg-stone-800' 
+                  ? 'text-[var(--accent)] dark:text-[var(--accent-dark)] bg-[#E8E9EE] dark:bg-stone-800' 
                   : 'text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400'}`}
             >
               <BookOpen className="w-4 h-4" />
@@ -960,9 +960,9 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               className="hidden md:inline-flex p-2 md:p-1.5 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800/60 transition-colors cursor-pointer"
             >
               {isPreviewOnly ? (
-                <Edit3 className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+                <Edit3 className="w-4.5 h-4.5 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
               ) : (
-                <Eye className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+                <Eye className="w-4.5 h-4.5 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
               )}
             </button>
           ) : (
@@ -976,7 +976,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                   id="btn-layout-editor-only"
                   onClick={() => updateSettings({ editorMode: 'editor' })}
                   className={`p-1 rounded-sm text-xs cursor-pointer transition-colors
-                    ${isEditorOnly ? 'bg-white dark:bg-[#1A1B1E] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                    ${isEditorOnly ? 'bg-white dark:bg-[#1A1B1E] text-[var(--accent)] dark:text-[var(--accent-dark)] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
                   title="Editor View"
                 >
                   <EyeOff className="w-3.5 h-3.5" />
@@ -986,7 +986,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                   id="btn-layout-split"
                   onClick={() => updateSettings({ editorMode: 'split' })}
                   className={`p-1 rounded-sm text-xs cursor-pointer transition-colors
-                    ${isSplitMode ? 'bg-white dark:bg-[#1A1B1E] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                    ${isSplitMode ? 'bg-white dark:bg-[#1A1B1E] text-[var(--accent)] dark:text-[var(--accent-dark)] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
                   title="Split View"
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -996,7 +996,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                   id="btn-layout-preview-only"
                   onClick={() => updateSettings({ editorMode: 'preview' })}
                   className={`p-1 rounded-sm text-xs cursor-pointer transition-colors
-                    ${isPreviewOnly ? 'bg-white dark:bg-[#1A1B1E] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                    ${isPreviewOnly ? 'bg-white dark:bg-[#1A1B1E] text-[var(--accent)] dark:text-[var(--accent-dark)] font-semibold shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
                   title="Reader View"
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -1250,7 +1250,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                 onClick={() => setRightPanelTab('outline')}
                 className={`flex-1 py-2 text-[10px] font-bold tracking-widest uppercase transition-colors cursor-pointer text-center
                   ${rightPanelTab === 'outline' 
-                    ? 'text-[#1D2EA0] dark:text-[#A3B5F5] border-b-2 border-[#1D2EA0] dark:border-[#A3B5F5]' 
+                    ? 'text-[var(--accent)] dark:text-[var(--accent-dark)] border-b-2 border-[var(--accent)] dark:border-[var(--accent-dark)]' 
                     : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
               >
                 Outline
@@ -1260,7 +1260,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                 onClick={() => setRightPanelTab('info')}
                 className={`flex-1 py-2 text-[10px] font-bold tracking-widest uppercase transition-colors cursor-pointer text-center
                   ${rightPanelTab === 'info' 
-                    ? 'text-[#1D2EA0] dark:text-[#A3B5F5] border-b-2 border-[#1D2EA0] dark:border-[#A3B5F5]' 
+                    ? 'text-[var(--accent)] dark:text-[var(--accent-dark)] border-b-2 border-[var(--accent)] dark:border-[var(--accent-dark)]' 
                     : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
               >
                 Metadata
@@ -1284,7 +1284,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                         key={i}
                         type="button"
                         onClick={() => scrollToHeading(h.id)}
-                        className={`w-full text-start py-1 px-2 text-xs rounded-sm hover:bg-stone-200/50 dark:hover:bg-stone-900 text-stone-600 dark:text-stone-400 hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors truncate cursor-pointer
+                        className={`w-full text-start py-1 px-2 text-xs rounded-sm hover:bg-stone-200/50 dark:hover:bg-stone-900 text-stone-600 dark:text-stone-400 hover:text-[var(--accent)] dark:hover:text-[var(--accent-dark)] transition-colors truncate cursor-pointer
                           ${h.level === 1 ? 'font-semibold' : h.level === 2 ? 'ps-4 text-[11px]' : 'ps-8 text-[10px]'}`}
                       >
                         {h.text}
@@ -1442,7 +1442,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
                 onClick={item.action}
                 aria-label={item.label}
                 className={`flex flex-col items-center justify-center gap-1 h-full rounded-xl transition-colors cursor-pointer
-                  ${item.active ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-500 dark:text-stone-400'}`}
+                  ${item.active ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : 'text-stone-500 dark:text-stone-400'}`}
               >
                 <item.icon className="w-[19px] h-[19px]" />
                 <span className="text-[9px] font-bold uppercase tracking-wide">{item.label}</span>
@@ -1484,7 +1484,7 @@ export default function MarkdownEditor({ noteId }: MarkdownEditorProps) {
               type="button"
               id="btn-unsaved-save"
               onClick={() => confirmNavigation(true, triggerImmediateSave)}
-              className="px-4 py-1.5 rounded-sm font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] dark:bg-[#A3B5F5] dark:hover:bg-[#94A5F0] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm font-bold uppercase tracking-widest text-white bg-[var(--accent)] hover:bg-[#18298B] dark:bg-[var(--accent-dark)] dark:hover:bg-[#94A5F0] cursor-pointer"
             >
               Save Changes
             </button>

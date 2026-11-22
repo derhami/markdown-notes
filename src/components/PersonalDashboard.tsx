@@ -226,7 +226,7 @@ export default function PersonalDashboard() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => handleCreateNote(false)}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#1D2EA0] dark:bg-[#A3B5F5] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer rounded-sm"
+                className="px-4 py-2 text-xs font-semibold text-white bg-[var(--accent)] dark:bg-[var(--accent-dark)] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer rounded-sm"
               >
                 New Note
               </button>
@@ -269,10 +269,10 @@ export default function PersonalDashboard() {
                       <button
                         type="button"
                         onClick={() => setActiveNoteId(continueNote.id)}
-                        className="group flex flex-col gap-2 w-full text-left py-4 px-5 rounded-sm border border-stone-200/55 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] hover:border-[#1D2EA0] dark:hover:border-[#A3B5F5] transition-all cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.01)] dark:shadow-none"
+                        className="group flex flex-col gap-2 w-full text-left py-4 px-5 rounded-sm border border-stone-200/55 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] hover:border-[var(--accent)] dark:hover:border-[var(--accent-dark)] transition-all cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.01)] dark:shadow-none"
                       >
                         <div className="flex items-center justify-between w-full">
-                          <span className="text-lg font-serif font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#1D2EA0] dark:group-hover:text-[#A3B5F5] transition-colors line-clamp-1">
+                          <span className="text-lg font-serif font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[var(--accent)] dark:group-hover:text-[var(--accent-dark)] transition-colors line-clamp-1">
                             {disp.title}
                           </span>
                           {continueNote.isPinned && <Pin className="w-3.5 h-3.5 text-stone-400" />}
@@ -310,7 +310,7 @@ export default function PersonalDashboard() {
                           className="flex items-center justify-between w-full py-3 px-4 hover:bg-stone-50 dark:hover:bg-stone-900/40 text-stone-600 dark:text-stone-300 transition-colors cursor-pointer text-left"
                         >
                           <div className="flex flex-col gap-0.5 max-w-[70%]">
-                            <span className="font-serif font-medium text-stone-800 dark:text-stone-200 truncate group-hover:text-[#1D2EA0] text-sm">
+                            <span className="font-serif font-medium text-stone-800 dark:text-stone-200 truncate group-hover:text-[var(--accent)] text-sm">
                               {disp.title}
                             </span>
                             <div className="flex items-center gap-1.5 text-[10px] text-stone-400 dark:text-stone-500 font-medium">
@@ -342,7 +342,7 @@ export default function PersonalDashboard() {
                 </h3>
                 <div className="grid grid-cols-3 gap-2 sm:gap-4 border border-stone-200/50 dark:border-[#2E3039] p-3 sm:p-4 rounded-sm bg-white dark:bg-[#1A1B1E]">
                   <div className="flex flex-col">
-                    <span className="text-lg sm:text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
+                    <span className="text-lg sm:text-xl font-serif text-[var(--accent)] dark:text-[var(--accent-dark)] font-medium leading-tight">
                       {totalNotesCount}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">
@@ -350,7 +350,7 @@ export default function PersonalDashboard() {
                     </span>
                   </div>
                   <div className="flex flex-col border-s border-stone-200/50 dark:border-[#2E3039] ps-4">
-                    <span className="text-lg sm:text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
+                    <span className="text-lg sm:text-xl font-serif text-[var(--accent)] dark:text-[var(--accent-dark)] font-medium leading-tight">
                       {totalWords.toLocaleString()}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">
@@ -358,7 +358,7 @@ export default function PersonalDashboard() {
                     </span>
                   </div>
                   <div className="flex flex-col border-s border-stone-200/50 dark:border-[#2E3039] ps-4">
-                    <span className="text-lg sm:text-xl font-serif text-[#1D2EA0] dark:text-[#A3B5F5] font-medium leading-tight">
+                    <span className="text-lg sm:text-xl font-serif text-[var(--accent)] dark:text-[var(--accent-dark)] font-medium leading-tight">
                       {activeFoldersCount}
                     </span>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider mt-1 font-bold">
@@ -438,7 +438,7 @@ export default function PersonalDashboard() {
                       </p>
                       <button
                         onClick={() => setActiveNoteId('settings')}
-                        className="w-full py-2 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white font-bold text-xs rounded-sm hover:opacity-90 transition-all cursor-pointer text-center"
+                        className="w-full py-2 bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white font-bold text-xs rounded-sm hover:opacity-90 transition-all cursor-pointer text-center"
                       >
                         Set Vault Password
                       </button>
@@ -455,14 +455,14 @@ export default function PersonalDashboard() {
                           value={passwordInput}
                           onChange={(e) => setPasswordInput(e.target.value)}
                           className={`w-full py-2 px-3 border rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none transition-colors
-                            ${unlockError ? 'border-red-400 dark:border-red-500' : 'border-stone-200 dark:border-[#2E3039] focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]'}`}
+                            ${unlockError ? 'border-red-400 dark:border-red-500' : 'border-stone-200 dark:border-[#2E3039] focus:border-[var(--accent)] dark:focus:border-[var(--accent-dark)]'}`}
                           disabled={isSubmitting}
                         />
                       </div>
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-2 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white font-bold text-xs rounded-sm hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer text-center disabled:opacity-50"
+                        className="w-full py-2 bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white font-bold text-xs rounded-sm hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer text-center disabled:opacity-50"
                       >
                         {isSubmitting ? 'Decrypting...' : 'Unlock Vault'}
                       </button>
@@ -479,7 +479,7 @@ export default function PersonalDashboard() {
                             setActiveNoteId(null);
                             showToast('Browse all notes. Secure notes are now decrypted and fully visible.', 'info');
                           }}
-                          className="flex-1 py-2 border border-[#1D2EA0] dark:border-[#A3B5F5] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold text-xs rounded-sm hover:bg-stone-50 dark:hover:bg-stone-900/50 transition-colors cursor-pointer text-center"
+                          className="flex-1 py-2 border border-[var(--accent)] dark:border-[var(--accent-dark)] text-[var(--accent)] dark:text-[var(--accent-dark)] font-semibold text-xs rounded-sm hover:bg-stone-50 dark:hover:bg-stone-900/50 transition-colors cursor-pointer text-center"
                         >
                           Open Secure Notes
                         </button>

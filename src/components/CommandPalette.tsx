@@ -325,13 +325,13 @@ export default function CommandPalette() {
                   className={`flex items-center justify-between p-2.5 rounded transition-all cursor-pointer select-none
                     ${isRtl ? 'flex-row-reverse' : 'flex-row'}
                     ${isSelected 
-                      ? 'bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold border-stone-200' 
+                      ? 'bg-[#F2F3F8] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)] font-semibold border-stone-200' 
                       : 'text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/40'}`}
                 >
                   <div className={`flex items-center gap-3 min-w-0
                     ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}
                   >
-                    <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400 dark:text-stone-500'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : 'text-stone-400 dark:text-stone-500'}`} />
                     <div className={`flex flex-col min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
                       <span className="text-xs truncate">{item.label}</span>
                       {'subtitle' in item && item.subtitle && (
@@ -343,7 +343,7 @@ export default function CommandPalette() {
                   </div>
 
                   {isSelected && (
-                    <span className="text-[10px] text-[#1D2EA0] dark:text-[#A3B5F5] font-bold uppercase shrink-0">
+                    <span className="text-[10px] text-[var(--accent)] dark:text-[var(--accent-dark)] font-bold uppercase shrink-0">
                       ENTER
                     </span>
                   )}

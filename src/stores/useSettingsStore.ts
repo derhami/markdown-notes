@@ -5,6 +5,15 @@
 
 import { create } from 'zustand';
 import { db, DEFAULT_SETTINGS } from '../db/database';
+
+export const ACCENT_PRESETS = [
+  { id: 'indigo',  label: 'Indigo',  light: '#1D2EA0', dark: '#A3B5F5' },
+  { id: 'emerald', label: 'Emerald', light: '#0F766E', dark: '#5EEAD4' },
+  { id: 'rose',    label: 'Rose',    light: '#BE123C', dark: '#FDA4AF' },
+  { id: 'amber',   label: 'Amber',   light: '#B45309', dark: '#FCD34D' },
+  { id: 'violet',  label: 'Violet',  light: '#6D28D9', dark: '#C4B5FD' },
+  { id: 'slate',   label: 'Slate',   light: '#334155', dark: '#CBD5E1' }
+] as const;
 import type { Settings, Theme, Language, EditorMode, UiDensity } from '../types';
 
 interface SettingsState {
@@ -31,6 +40,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       
       // Apply initial theme and direction
       applyTheme(mergedSettings.theme);
+      applyAccentColor(mergedSettings.accentPreset || 'indigo');
       applyLanguage(mergedSettings.language || 'en');
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -52,6 +62,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     // Apply visual effects if related things changed
     if (changes.theme) {
       applyTheme(changes.theme);
+    }
+    if (changes.accentPreset) {
+      applyAccentColor(changes.accentPreset);
     }
     applyLanguage(updated.language);
   }
@@ -98,4 +111,14 @@ if (typeof window !== 'undefined') {
       applyTheme('system');
     }
   });
+}
+
+function applyAccentColor(presetId: string) {
+  const preset = ACCENT_PRESETS.find((p) => p.id === presetId) || ACCENT_PRESETS[0];
+  const root = window.document.documentElement;
+  root.style.setProperty('--accent', preset.light);
+  root.style.setProperty('--accent-dark', preset.dark);
+  try {
+    localStorage.setItem('accentPreset', preset.id);
+  } catch (e) {}
 }

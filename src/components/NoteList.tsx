@@ -331,7 +331,7 @@ export default function NoteList() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search notes... (Ctrl+K)"
-            className="w-full py-2.5 md:py-1.5 pl-9 pr-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all max-md:rounded-full max-md:border-transparent max-md:bg-stone-100 dark:max-md:bg-[#222328] max-md:py-3 max-md:text-[13px]"
+            className="w-full py-2.5 md:py-1.5 pl-9 pr-3 bg-stone-50 dark:bg-[#111214] border border-[#D1D4DC] dark:border-[#2E3039] rounded text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all max-md:rounded-full max-md:border-transparent max-md:bg-stone-100 dark:max-md:bg-[#222328] max-md:py-3 max-md:text-[13px]"
           />
         </div>
 
@@ -444,7 +444,7 @@ export default function NoteList() {
                     max-md:mx-3 max-md:mb-2 max-md:rounded-2xl max-md:border max-md:border-stone-200/70 dark:max-md:border-[#2E3039] max-md:bg-white dark:max-md:bg-[#1E1F23] max-md:px-3.5 max-md:py-3 max-md:shadow-[0_1px_2px_rgba(16,24,40,0.04)] max-md:active:scale-[0.99]
                     ${isTitleRtl ? 'text-right' : 'text-left'}
                     ${isSelected 
-                      ? 'max-md:border-[#1D2EA0] max-md:ring-1 max-md:ring-[#1D2EA0]/20 bg-[#F2F3F8] dark:bg-[#222328]' 
+                      ? 'max-md:border-[var(--accent)] max-md:ring-1 max-md:ring-[var(--accent)]/20 bg-[#F2F3F8] dark:bg-[#222328]' 
                       : 'hover:bg-stone-50/50 dark:hover:bg-[#2E3039]/20'}`}
                 >
                   {/* Note Row Heading */}
@@ -475,7 +475,7 @@ export default function NoteList() {
                             id={`btn-browse-pin-${note.id}`}
                             onClick={(e) => handleTogglePin(e, note)}
                             className={`p-1.5 md:p-0.5 rounded hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors cursor-pointer
-                              ${note.isPinned ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-300 dark:text-stone-700'}`}
+                              ${note.isPinned ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : 'text-stone-300 dark:text-stone-700'}`}
                           >
                             <Pin className="w-3 h-3 fill-current" />
                           </button>
@@ -562,7 +562,7 @@ export default function NoteList() {
               autoFocus
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#111214] text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] text-sm"
+              className="w-full px-3 py-2 rounded border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#111214] text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-[var(--accent)] text-sm"
               placeholder="e.g. My Projects"
             />
           </div>
@@ -578,7 +578,7 @@ export default function NoteList() {
             <button
               type="submit"
               id="btn-notelist-folder-submit"
-              className="px-4 py-1.5 rounded text-xs text-white bg-[#1D2EA0] hover:bg-[#18298B]"
+              className="px-4 py-1.5 rounded text-xs text-white bg-[var(--accent)] hover:bg-[#18298B]"
             >
               Save
             </button>

@@ -15,7 +15,7 @@ import { db, markWorkspaceSeeded } from '../db/database';
 import { importMarkdownFolder } from '../utils/importer';
 import { stringifyFrontmatter, sanitizeFileName } from '../utils/notesHelper';
 import { createZip, downloadBlob } from '../utils/zip';
-import { useSettingsStore } from '../stores/useSettingsStore';
+import { useSettingsStore, ACCENT_PRESETS } from '../stores/useSettingsStore';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { useToastStore } from '../stores/useToastStore';
 import { useVaultStore } from '../stores/useVaultStore';
@@ -438,7 +438,7 @@ export default function SettingsPanel() {
   const renderAppearanceSection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Appearance Settings</h3>
+        <h3 className="text-xs font-bold text-[var(--accent)] dark:text-[var(--accent-dark)] uppercase tracking-wider">Appearance Settings</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Control the theme and color styles of Markdown Notes</p>
       </div>
 
@@ -460,10 +460,32 @@ export default function SettingsPanel() {
               onClick={() => updateSettings({ theme: mode.id as any })}
               className={`px-3 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-all
                 ${settings.theme === mode.id 
-                  ? 'border-[#1D2EA0] dark:border-[#A3B5F5] bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] font-bold' 
+                  ? 'border-[var(--accent)] dark:border-[var(--accent-dark)] bg-[#F2F3F8] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)] font-bold' 
                   : 'border-stone-200 dark:border-[#2E3039] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
             >
               {mode.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Accent color presets */}
+      <div className="flex flex-col gap-1.5 border-t border-stone-100 dark:border-[#2E3039] pt-5">
+        <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Accent Color</label>
+        <p className="text-[10px] text-stone-400 leading-normal">Choose the highlight color used across buttons, links and focus rings.</p>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {ACCENT_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => updateSettings({ accentPreset: preset.id } as any)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-all
+                ${settings.accentPreset === preset.id || (!settings.accentPreset && preset.id === 'indigo')
+                  ? 'border-[var(--accent)] dark:border-[var(--accent-dark)] bg-[#F2F3F8] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)] font-bold'
+                  : 'border-stone-200 dark:border-[#2E3039] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
+            >
+              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: preset.light }} />
+              {preset.label}
             </button>
           ))}
         </div>
@@ -487,7 +509,7 @@ export default function SettingsPanel() {
               onClick={() => updateSettings({ uiDensity: d.id as any })}
               className={`px-3 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-all
                 ${settings.uiDensity === d.id 
-                  ? 'border-[#1D2EA0] dark:border-[#A3B5F5] bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] font-bold' 
+                  ? 'border-[var(--accent)] dark:border-[var(--accent-dark)] bg-[#F2F3F8] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)] font-bold' 
                   : 'border-stone-200 dark:border-[#2E3039] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
             >
               {d.label}
@@ -501,7 +523,7 @@ export default function SettingsPanel() {
   const renderEditorSection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Editor Settings</h3>
+        <h3 className="text-xs font-bold text-[var(--accent)] dark:text-[var(--accent-dark)] uppercase tracking-wider">Editor Settings</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Customize font and layouts of the Markdown text canvas</p>
       </div>
 
@@ -518,7 +540,7 @@ export default function SettingsPanel() {
           max="22"
           value={settings.editorFontSize}
           onChange={(e) => updateSettings({ editorFontSize: parseInt(e.target.value) })}
-          className="w-full h-1 bg-stone-200 dark:bg-[#2E3039] rounded appearance-none cursor-pointer accent-[#1D2EA0] dark:accent-[#A3B5F5]"
+          className="w-full h-1 bg-stone-200 dark:bg-[#2E3039] rounded appearance-none cursor-pointer accent-[var(--accent)] dark:accent-[var(--accent-dark)]"
         />
       </div>
 
@@ -536,7 +558,7 @@ export default function SettingsPanel() {
               onClick={() => updateSettings({ editorLineHeight: lh })}
               className={`px-3 py-1 rounded border text-xs font-medium cursor-pointer transition-all
                 ${settings.editorLineHeight === lh 
-                  ? 'border-[#1D2EA0] dark:border-[#A3B5F5] bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5]' 
+                  ? 'border-[var(--accent)] dark:border-[var(--accent-dark)] bg-[#F2F3F8] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)]' 
                   : 'border-stone-200 dark:border-[#2E3039] text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
             >
               {lh}
@@ -556,7 +578,7 @@ export default function SettingsPanel() {
           id="btn-editor-wrap-toggle"
           onClick={() => updateSettings({ editorWordWrap: !settings.editorWordWrap })}
           className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer
-            ${settings.editorWordWrap ? 'bg-[#1D2EA0] dark:bg-[#A3B5F5]' : 'bg-stone-200 dark:bg-[#222328]'}`}
+            ${settings.editorWordWrap ? 'bg-[var(--accent)] dark:bg-[var(--accent-dark)]' : 'bg-stone-200 dark:bg-[#222328]'}`}
         >
           <div 
             className={`w-4.5 h-4.5 rounded-full bg-white shadow-sm transform transition-transform duration-200
@@ -570,7 +592,7 @@ export default function SettingsPanel() {
   const renderStorageSection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Storage & Local Files</h3>
+        <h3 className="text-xs font-bold text-[var(--accent)] dark:text-[var(--accent-dark)] uppercase tracking-wider">Storage & Local Files</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Inspect database, sync local directories, and run backup processes</p>
       </div>
 
@@ -588,7 +610,7 @@ export default function SettingsPanel() {
       {/* Two-way Markdown folder mirror */}
       <div className="flex flex-col gap-2 border-t border-stone-100 dark:border-[#2E3039] pt-4">
         <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
-          <FolderSync className="w-3.5 h-3.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+          <FolderSync className="w-3.5 h-3.5 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
           <span>Markdown Folder Sync</span>
         </label>
         <p className="text-[10px] text-stone-400 leading-relaxed font-semibold">
@@ -617,7 +639,7 @@ export default function SettingsPanel() {
                 id="btn-settings-sync-now"
                 onClick={() => void syncNow('manual')}
                 disabled={syncStatus === 'syncing'}
-                className="px-3.5 py-1.5 bg-[#1D2EA0] text-white hover:bg-[#18298B] dark:bg-[#A3B5F5] text-xs font-bold rounded-sm cursor-pointer flex items-center gap-1.5 transition-colors disabled:opacity-60"
+                className="px-3.5 py-1.5 bg-[var(--accent)] text-white hover:bg-[#18298B] dark:bg-[var(--accent-dark)] text-xs font-bold rounded-sm cursor-pointer flex items-center gap-1.5 transition-colors disabled:opacity-60"
               >
                 {syncStatus === 'syncing' ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -648,7 +670,7 @@ export default function SettingsPanel() {
                 aria-checked={autoSync}
                 onClick={() => void setAutoSync(!autoSync)}
                 className={`w-10 h-5.5 rounded-full p-0.5 shrink-0 transition-colors duration-200 cursor-pointer
-                  ${autoSync ? 'bg-[#1D2EA0] dark:bg-[#A3B5F5]' : 'bg-stone-200 dark:bg-[#222328]'}`}
+                  ${autoSync ? 'bg-[var(--accent)] dark:bg-[var(--accent-dark)]' : 'bg-stone-200 dark:bg-[#222328]'}`}
               >
                 <span
                   className={`block w-4.5 h-4.5 rounded-full bg-white shadow-sm transform transition-transform duration-200
@@ -669,7 +691,7 @@ export default function SettingsPanel() {
               type="button"
               id="btn-settings-connect-folder"
               onClick={() => void connectSyncFolder()}
-              className="px-3.5 py-2 bg-[#1D2EA0] text-white hover:bg-[#18298B] dark:bg-[#A3B5F5] text-xs font-bold rounded-sm cursor-pointer flex items-center justify-center gap-1.5 transition-colors self-start"
+              className="px-3.5 py-2 bg-[var(--accent)] text-white hover:bg-[#18298B] dark:bg-[var(--accent-dark)] text-xs font-bold rounded-sm cursor-pointer flex items-center justify-center gap-1.5 transition-colors self-start"
             >
               {nativeShell ? <Smartphone className="w-3.5 h-3.5" /> : <Folder className="w-3.5 h-3.5" />}
               <span>{nativeShell ? 'Use device folder' : 'Choose sync folder'}</span>
@@ -753,7 +775,7 @@ export default function SettingsPanel() {
             type="button"
             id="btn-settings-export-backup"
             onClick={handleExportBackup}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold text-white bg-[#1D2EA0] hover:bg-[#18298B] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold text-white bg-[var(--accent)] hover:bg-[#18298B] transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Archive</span>
@@ -794,10 +816,10 @@ export default function SettingsPanel() {
 
       {/* Restore Preview Block - PREVENT SILENT OVERWRITES */}
       {restorePreview && (
-        <div className="border border-[#1D2EA0]/30 dark:border-[#A3B5F5]/30 bg-[#1D2EA0]/5 rounded-sm p-4 mt-2 flex flex-col gap-3.5">
+        <div className="border border-[var(--accent)]/30 dark:border-[var(--accent-dark)]/30 bg-[var(--accent)]/5 rounded-sm p-4 mt-2 flex flex-col gap-3.5">
           <div>
-            <h4 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+            <h4 className="text-xs font-bold text-[var(--accent)] dark:text-[var(--accent-dark)] flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
               <span>Restore Preview & Conflict Analysis</span>
             </h4>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 leading-relaxed font-semibold">
@@ -838,7 +860,7 @@ export default function SettingsPanel() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleExecuteRestore}
-              className="py-2 px-3.5 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white text-xs font-bold rounded-sm cursor-pointer hover:opacity-90 transition-all"
+              className="py-2 px-3.5 bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white text-xs font-bold rounded-sm cursor-pointer hover:opacity-90 transition-all"
             >
               Confirm & Execute Merge
             </button>
@@ -912,7 +934,7 @@ export default function SettingsPanel() {
   const renderSecuritySection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Security & Vault</h3>
+        <h3 className="text-xs font-bold text-[var(--accent)] dark:text-[var(--accent-dark)] uppercase tracking-wider">Security & Vault</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Manage client-side AES-256 encrypted storage, passwords, and recovery options</p>
       </div>
 
@@ -921,7 +943,7 @@ export default function SettingsPanel() {
         <form onSubmit={handleSetupVault} className="border border-stone-200/60 dark:border-[#2E3039] p-4 rounded-sm flex flex-col gap-3 bg-white dark:bg-[#1A1B1E]">
           <div>
             <h4 className="text-xs font-bold text-stone-800 dark:text-stone-100 flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+              <Shield className="w-4 h-4 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
               <span>Initialize Secure Vault</span>
             </h4>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 leading-normal font-semibold">
@@ -937,7 +959,7 @@ export default function SettingsPanel() {
                 value={vaultPass}
                 onChange={(e) => setVaultPass(e.target.value)}
                 placeholder="Secure Password"
-                className="w-full py-1.5 px-3 border border-stone-300 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
+                className="w-full py-1.5 px-3 border border-stone-300 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[var(--accent)] dark:focus:border-[var(--accent-dark)]"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -947,7 +969,7 @@ export default function SettingsPanel() {
                 value={vaultPassConfirm}
                 onChange={(e) => setVaultPassConfirm(e.target.value)}
                 placeholder="Confirm Password"
-                className="w-full py-1.5 px-3 border border-stone-300 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
+                className="w-full py-1.5 px-3 border border-stone-300 dark:border-[#2E3039] rounded-sm text-xs bg-[#F2F3F8] dark:bg-[#111214] text-stone-800 dark:text-stone-100 outline-none focus:border-[var(--accent)] dark:focus:border-[var(--accent-dark)]"
               />
             </div>
           </div>
@@ -961,7 +983,7 @@ export default function SettingsPanel() {
 
           <button
             type="submit"
-            className="py-2 px-3.5 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white text-xs font-bold rounded-sm cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all text-center self-start"
+            className="py-2 px-3.5 bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white text-xs font-bold rounded-sm cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all text-center self-start"
           >
             Create Private Vault
           </button>
@@ -972,7 +994,7 @@ export default function SettingsPanel() {
           {/* Status Indicator */}
           <div className="flex items-center justify-between pb-3.5 border-b border-stone-100 dark:border-[#2E3039]/50">
             <div className="flex items-center gap-2">
-              <Shield className="w-4.5 h-4.5 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+              <Shield className="w-4.5 h-4.5 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-stone-800 dark:text-stone-100">Private Cryptographic Vault</span>
                 <span className="text-[10px] text-stone-400 font-semibold">
@@ -1018,7 +1040,7 @@ export default function SettingsPanel() {
                       showToast('Incorrect vault password', 'error');
                     }
                   }}
-                  className="py-1.5 px-4 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white font-bold text-xs rounded-sm cursor-pointer hover:opacity-90 transition-all"
+                  className="py-1.5 px-4 bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white font-bold text-xs rounded-sm cursor-pointer hover:opacity-90 transition-all"
                 >
                   Unlock
                 </button>
@@ -1052,7 +1074,7 @@ export default function SettingsPanel() {
                   onClick={() => setAutoLockDelay(delay.id as any)}
                   className={`px-2.5 py-1 text-[10px] font-bold border rounded-sm transition-all cursor-pointer
                     ${autoLockDelay === delay.id 
-                      ? 'border-[#1D2EA0] dark:border-[#A3B5F5] text-[#1D2EA0] dark:text-[#A3B5F5] bg-[#F2F3F8] dark:bg-[#222328]' 
+                      ? 'border-[var(--accent)] dark:border-[var(--accent-dark)] text-[var(--accent)] dark:text-[var(--accent-dark)] bg-[#F2F3F8] dark:bg-[#222328]' 
                       : 'border-stone-200 dark:border-[#2E3039] text-stone-400 dark:text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
                 >
                   {delay.label}
@@ -1071,7 +1093,7 @@ export default function SettingsPanel() {
               type="button"
               onClick={() => setShowHidden(!showHidden)}
               className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer
-                ${showHidden ? 'bg-[#1D2EA0] dark:bg-[#A3B5F5]' : 'bg-stone-200 dark:bg-stone-800'}`}
+                ${showHidden ? 'bg-[var(--accent)] dark:bg-[var(--accent-dark)]' : 'bg-stone-200 dark:bg-stone-800'}`}
             >
               <div 
                 className={`w-4.5 h-4.5 rounded-full bg-white shadow-sm transform transition-transform duration-200
@@ -1122,7 +1144,7 @@ export default function SettingsPanel() {
             {recoveryKeyDisplay ? (
               <div className="flex flex-col gap-2.5 p-3.5 bg-stone-50 dark:bg-[#0E1013] border border-stone-200 dark:border-[#2E3039] rounded-sm">
                 <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-none">Your Recovery Key (Show Once):</span>
-                <span className="text-xs font-mono font-bold break-all select-all text-[#1D2EA0] dark:text-[#A3B5F5]">
+                <span className="text-xs font-mono font-bold break-all select-all text-[var(--accent)] dark:text-[var(--accent-dark)]">
                   {recoveryKeyDisplay}
                 </span>
                 
@@ -1140,7 +1162,7 @@ export default function SettingsPanel() {
                   <span className="text-stone-300">|</span>
                   <button
                     onClick={handleDownloadRecoveryKey}
-                    className="flex items-center gap-1 text-[10px] font-bold text-stone-500 hover:text-[#1D2EA0] dark:hover:text-[#A3B5F5] transition-colors"
+                    className="flex items-center gap-1 text-[10px] font-bold text-stone-500 hover:text-[var(--accent)] dark:hover:text-[var(--accent-dark)] transition-colors"
                   >
                     <Download className="w-3 h-3" />
                     <span>Download TXT</span>
@@ -1151,7 +1173,7 @@ export default function SettingsPanel() {
               <button
                 type="button"
                 onClick={handleGenerateRecoveryKey}
-                className="py-1.5 px-3 bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white text-xs font-bold rounded-sm cursor-pointer self-start transition-colors"
+                className="py-1.5 px-3 bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white text-xs font-bold rounded-sm cursor-pointer self-start transition-colors"
               >
                 Generate Emergency Key
               </button>
@@ -1166,7 +1188,7 @@ export default function SettingsPanel() {
   const renderShortcutsSection = () => (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div>
-        <h3 className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5] uppercase tracking-wider">Keyboard Shortcuts</h3>
+        <h3 className="text-xs font-bold text-[var(--accent)] dark:text-[var(--accent-dark)] uppercase tracking-wider">Keyboard Shortcuts</h3>
         <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 font-semibold">Boost your productivity using keyboard commands</p>
       </div>
 
@@ -1217,7 +1239,7 @@ export default function SettingsPanel() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <Settings className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+            <Settings className="w-4 h-4 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
             <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
               {mobileSection === 'menu' ? 'Preferences' : 
                mobileSection === 'appearance' ? 'Appearance' :
@@ -1262,7 +1284,7 @@ export default function SettingsPanel() {
                       setActiveTab('storage');
                       setMobileSection('storage');
                     }}
-                    className="text-[10px] font-bold text-[#1D2EA0] dark:text-[#A3B5F5] shrink-0"
+                    className="text-[10px] font-bold text-[var(--accent)] dark:text-[var(--accent-dark)] shrink-0"
                   >
                     Manage
                   </button>
@@ -1276,7 +1298,7 @@ export default function SettingsPanel() {
                   type="button"
                   onClick={() => (syncConnected ? void syncNow('manual') : void connectSyncFolder())}
                   disabled={syncStatus === 'syncing'}
-                  className="self-start px-3 py-1.5 rounded-lg bg-[#1D2EA0] dark:bg-[#A3B5F5] text-white dark:text-[#111214] text-[10px] font-bold flex items-center gap-1.5 disabled:opacity-60"
+                  className="self-start px-3 py-1.5 rounded-lg bg-[var(--accent)] dark:bg-[var(--accent-dark)] text-white dark:text-[#111214] text-[10px] font-bold flex items-center gap-1.5 disabled:opacity-60"
                 >
                   {syncStatus === 'syncing' ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -1333,7 +1355,7 @@ export default function SettingsPanel() {
       {/* Settings Panel Header */}
       <div className="px-6 py-4 border-b border-stone-100 dark:border-[#2E3039] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <Settings className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+          <Settings className="w-4 h-4 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
           <div>
             <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">Preferences</h2>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 font-semibold mt-0.5">Customize your writing space and secure vault</p>

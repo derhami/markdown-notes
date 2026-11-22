@@ -128,7 +128,7 @@ export default function Sidebar() {
           type="button"
           id="btn-rail-new-note"
           onClick={handleCreateNote}
-          className="w-8 h-8 rounded-md bg-[#1D2EA0] hover:bg-[#18298B] dark:bg-[#A3B5F5] dark:hover:bg-[#94A5F0] text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm"
+          className="w-8 h-8 rounded-md bg-[var(--accent)] hover:bg-[#18298B] dark:bg-[var(--accent-dark)] dark:hover:bg-[#94A5F0] text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm"
           title="Create New Note (Ctrl+N)"
         >
           <Plus className="w-4 h-4" />
@@ -341,7 +341,7 @@ export default function Sidebar() {
                 }}
                 className={`flex items-center justify-between px-3 py-2 rounded text-xs transition-colors cursor-pointer
                   ${activeCategory === `tag:${tag}`
-                    ? 'bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold'
+                    ? 'bg-[#F2F3F8] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)] font-semibold'
                     : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/40'}`}
               >
                 <span className="flex items-center gap-2 min-w-0">
@@ -375,7 +375,7 @@ export default function Sidebar() {
               autoFocus
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#111214] text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] transition-all text-sm"
+              className="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#111214] text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all text-sm"
               placeholder="Untitled Folder"
             />
           </div>
@@ -392,7 +392,7 @@ export default function Sidebar() {
             <button
               type="submit"
               id="btn-rail-folder-modal-submit"
-              className="px-4 py-1.5 rounded text-xs font-semibold text-white bg-[#1D2EA0] hover:bg-[#18298B] transition-all cursor-pointer"
+              className="px-4 py-1.5 rounded text-xs font-semibold text-white bg-[var(--accent)] hover:bg-[#18298B] transition-all cursor-pointer"
             >
               Create
             </button>

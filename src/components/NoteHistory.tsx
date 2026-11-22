@@ -99,7 +99,7 @@ export default function NoteHistory({ noteId, isEncrypted, onClose, onRestore }:
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#D1D4DC]/60 dark:border-[#2E3039] shrink-0">
           <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+            <History className="w-4 h-4 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
             <h2 className="text-xs font-bold uppercase tracking-widest text-stone-600 dark:text-stone-300">
               Version History
             </h2>
@@ -130,7 +130,7 @@ export default function NoteHistory({ noteId, isEncrypted, onClose, onRestore }:
                   onClick={() => setSelectedId(version.id)}
                   className={`w-full text-start px-4 py-2.5 border-b border-stone-100 dark:border-stone-800/60 transition-colors cursor-pointer
                     ${selectedId === version.id
-                      ? 'bg-[#F2F3F8] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5]'
+                      ? 'bg-[#F2F3F8] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)]'
                       : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-900/40'}`}
                 >
                   <span className="block text-[11px] font-semibold">{formatTime(version.createdAt)}</span>
@@ -171,7 +171,7 @@ export default function NoteHistory({ noteId, isEncrypted, onClose, onRestore }:
               onRestore(preview);
               onClose();
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded bg-[#1D2EA0] text-white text-[11px] font-semibold disabled:opacity-40 hover:bg-[#18267f] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded bg-[var(--accent)] text-white text-[11px] font-semibold disabled:opacity-40 hover:bg-[#18267f] transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Restore this version

@@ -279,7 +279,7 @@ export default function NoteActionManager() {
         await db.tags.add({
           id: generateId(),
           name: cleanTag,
-          color: '#1D2EA0',
+          color: 'var(--accent)',
           createdAt: Date.now()
         });
       }
@@ -471,7 +471,7 @@ export default function NoteActionManager() {
                 onClick={handleTogglePin}
                 className={`flex flex-col items-center justify-center gap-1 py-1.5 rounded transition-all cursor-pointer ${
                   note.isPinned 
-                    ? 'bg-[#1D2EA0]/10 dark:bg-[#A3B5F5]/10 text-[#1D2EA0] dark:text-[#A3B5F5]' 
+                    ? 'bg-[var(--accent)]/10 dark:bg-[var(--accent-dark)]/10 text-[var(--accent)] dark:text-[var(--accent-dark)]' 
                     : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100/50 dark:hover:bg-stone-800/50'
                 }`}
               >
@@ -690,7 +690,7 @@ export default function NoteActionManager() {
               autoFocus
               value={renameTitle}
               onChange={(e) => setRenameTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] dark:focus:ring-[#A3B5F5] text-stone-900 dark:text-stone-100"
+              className="w-full px-3 py-2 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] dark:focus:ring-[var(--accent-dark)] text-stone-900 dark:text-stone-100"
             />
           </div>
 
@@ -706,7 +706,7 @@ export default function NoteActionManager() {
             <button
               type="submit"
               id="btn-rename-submit"
-              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] dark:bg-[#A3B5F5] dark:hover:bg-[#94A5F0] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[var(--accent)] hover:bg-[#18298B] dark:bg-[var(--accent-dark)] dark:hover:bg-[#94A5F0] cursor-pointer"
             >
               Rename
             </button>
@@ -730,7 +730,7 @@ export default function NoteActionManager() {
               autoFocus
               value={saveAsTitle}
               onChange={(e) => setSaveAsTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] dark:focus:ring-[#A3B5F5] text-stone-900 dark:text-stone-100"
+              className="w-full px-3 py-2 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] dark:focus:ring-[var(--accent-dark)] text-stone-900 dark:text-stone-100"
             />
           </div>
 
@@ -746,7 +746,7 @@ export default function NoteActionManager() {
             <button
               type="submit"
               id="btn-save-as-submit"
-              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] dark:bg-[#A3B5F5] dark:hover:bg-[#94A5F0] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[var(--accent)] hover:bg-[#18298B] dark:bg-[var(--accent-dark)] dark:hover:bg-[#94A5F0] cursor-pointer"
             >
               Save As
             </button>
@@ -770,7 +770,7 @@ export default function NoteActionManager() {
             onClick={() => handleMoveToFolder(null)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-xs font-semibold text-left transition-colors cursor-pointer
               ${note.folderId === null 
-                ? 'bg-[#1D2EA0]/10 text-[#1D2EA0] dark:bg-[#A3B5F5]/15 dark:text-[#A3B5F5]' 
+                ? 'bg-[var(--accent)]/10 text-[var(--accent)] dark:bg-[var(--accent-dark)]/15 dark:text-[var(--accent-dark)]' 
                 : 'hover:bg-stone-100 dark:hover:bg-stone-900 text-stone-700 dark:text-stone-300'}`}
           >
             <FolderClosed className="w-4 h-4" />
@@ -786,7 +786,7 @@ export default function NoteActionManager() {
                 onClick={() => handleMoveToFolder(fold.id)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-xs font-semibold text-left transition-colors cursor-pointer
                   ${isNoteFolder 
-                    ? 'bg-[#1D2EA0]/10 text-[#1D2EA0] dark:bg-[#A3B5F5]/15 dark:text-[#A3B5F5]' 
+                    ? 'bg-[var(--accent)]/10 text-[var(--accent)] dark:bg-[var(--accent-dark)]/15 dark:text-[var(--accent-dark)]' 
                     : 'hover:bg-stone-100 dark:hover:bg-stone-900 text-stone-700 dark:text-stone-300'}`}
               >
                 <Folder className="w-4 h-4 shrink-0" />
@@ -814,13 +814,13 @@ export default function NoteActionManager() {
                 required
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#1D2EA0] dark:focus:ring-[#A3B5F5] text-stone-900 dark:text-stone-100"
+                className="w-full px-3 py-1.5 text-xs bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] dark:focus:ring-[var(--accent-dark)] text-stone-900 dark:text-stone-100"
                 placeholder="tag-name"
               />
             </div>
             <button
               type="submit"
-              className="px-3 py-1.5 rounded-sm text-xs font-bold uppercase text-white bg-[#1D2EA0] hover:bg-[#18298B] shrink-0 cursor-pointer h-8"
+              className="px-3 py-1.5 rounded-sm text-xs font-bold uppercase text-white bg-[var(--accent)] hover:bg-[#18298B] shrink-0 cursor-pointer h-8"
             >
               Add
             </button>
@@ -838,13 +838,13 @@ export default function NoteActionManager() {
                 {displayTags.map((tg, idx) => (
                   <span 
                     key={idx} 
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#1D2EA0]/10 border border-stone-200 dark:border-stone-800 text-[10px] text-[#1D2EA0] dark:text-[#A3B5F5] font-semibold"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[var(--accent)]/10 border border-stone-200 dark:border-stone-800 text-[10px] text-[var(--accent)] dark:text-[var(--accent-dark)] font-semibold"
                   >
                     <span>#{tg}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tg)}
-                      className="hover:bg-[#1D2EA0]/20 rounded-full p-0.5"
+                      className="hover:bg-[var(--accent)]/20 rounded-full p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -892,7 +892,7 @@ export default function NoteActionManager() {
             <button
               type="button"
               onClick={closeAll}
-              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[var(--accent)] hover:bg-[#18298B] cursor-pointer"
             >
               Done
             </button>
@@ -977,7 +977,7 @@ export default function NoteActionManager() {
             </div>
             <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
               <span className="text-stone-400">Character Count</span>
-              <span className="font-mono font-bold text-[#1D2EA0] dark:text-[#A3B5F5]">{charCount}</span>
+              <span className="font-mono font-bold text-[var(--accent)] dark:text-[var(--accent-dark)]">{charCount}</span>
             </div>
             <div className="flex justify-between items-center py-1">
               <span className="text-stone-400">Reading Speed</span>
@@ -989,7 +989,7 @@ export default function NoteActionManager() {
             <button
               type="button"
               onClick={closeAll}
-              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[#1D2EA0] hover:bg-[#18298B] cursor-pointer"
+              className="px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest text-white bg-[var(--accent)] hover:bg-[#18298B] cursor-pointer"
             >
               Close
             </button>

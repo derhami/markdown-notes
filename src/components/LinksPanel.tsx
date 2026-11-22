@@ -118,7 +118,7 @@ export default function LinksPanel({ noteId, title, content, onOpenTitle, onClos
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#D1D4DC]/60 dark:border-[#2E3039] shrink-0">
           <div className="flex items-center gap-2">
-            <Link2 className="w-4 h-4 text-[#1D2EA0] dark:text-[#A3B5F5]" />
+            <Link2 className="w-4 h-4 text-[var(--accent)] dark:text-[var(--accent-dark)]" />
             <h2 className="text-xs font-bold uppercase tracking-widest text-stone-600 dark:text-stone-300">
               Connections
             </h2>
@@ -138,7 +138,7 @@ export default function LinksPanel({ noteId, title, content, onOpenTitle, onClos
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Filter connections"
-            className="w-full px-3 py-2 text-xs rounded border border-stone-200 dark:border-stone-800 bg-transparent text-stone-700 dark:text-stone-200 focus:outline-none focus:border-[#1D2EA0] dark:focus:border-[#A3B5F5]"
+            className="w-full px-3 py-2 text-xs rounded border border-stone-200 dark:border-stone-800 bg-transparent text-stone-700 dark:text-stone-200 focus:outline-none focus:border-[var(--accent)] dark:focus:border-[var(--accent-dark)]"
           />
           {isLocked && (
             <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-2">

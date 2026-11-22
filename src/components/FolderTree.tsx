@@ -65,7 +65,7 @@ function FolderNode({
             {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
           </button>
           
-          <FolderIcon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-[#1D2EA0] dark:text-[#A3B5F5]' : 'text-stone-400'}`} />
+          <FolderIcon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-[var(--accent)] dark:text-[var(--accent-dark)]' : 'text-stone-400'}`} />
           <span className="truncate text-xs font-medium tracking-tight">{folder.name}</span>
         </div>
 

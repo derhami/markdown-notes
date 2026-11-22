@@ -118,7 +118,7 @@ export default function HomeView({ onCreateNote, onBrowse }: HomeViewProps) {
             aria-label="Open settings"
             className="w-9 h-9 rounded-full border border-stone-200 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] text-stone-500 dark:text-stone-400 flex items-center justify-center active:scale-95 transition-transform"
           >
-            <span className="text-xs font-bold text-[#1D2EA0] dark:text-[#A3B5F5]">M</span>
+            <span className="text-xs font-bold text-[var(--accent)] dark:text-[var(--accent-dark)]">M</span>
           </button>
         </div>
 
@@ -168,7 +168,7 @@ export default function HomeView({ onCreateNote, onBrowse }: HomeViewProps) {
           <button
             type="button"
             onClick={() => setActiveNoteId(continueNote.id)}
-            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1D2EA0] via-[#2638B7] to-[#4A5CDC] p-5 text-start text-white shadow-lg shadow-[#1D2EA0]/20 active:scale-[0.99] transition-transform"
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--accent)] via-[#2638B7] to-[#4A5CDC] p-5 text-start text-white shadow-lg shadow-[var(--accent)]/20 active:scale-[0.99] transition-transform"
           >
             <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
             <div className="pointer-events-none absolute -bottom-12 left-4 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
@@ -202,7 +202,7 @@ export default function HomeView({ onCreateNote, onBrowse }: HomeViewProps) {
             onClick={onCreateNote}
             className="rounded-3xl border border-dashed border-stone-300 dark:border-[#2E3039] bg-white/60 dark:bg-[#1A1B1E] px-5 py-8 flex flex-col items-center gap-2 text-center active:scale-[0.99] transition-transform"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EEF0FB] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EEF0FB] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)]">
               <Sparkles className="w-5 h-5" />
             </span>
             <span className="text-sm font-semibold text-stone-700 dark:text-stone-200">
@@ -221,14 +221,14 @@ export default function HomeView({ onCreateNote, onBrowse }: HomeViewProps) {
             onClick={onCreateNote}
             className="flex items-center gap-2.5 rounded-2xl border border-stone-200/70 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] px-3.5 py-3.5 text-start active:scale-[0.98] transition-transform"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF0FB] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF0FB] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)]">
               <Plus className="w-4 h-4" />
             </span>
             <span className="text-xs font-bold text-stone-700 dark:text-stone-200">New note</span>
           </button>
 
           <label className="flex items-center gap-2.5 rounded-2xl border border-stone-200/70 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] px-3.5 py-3.5 cursor-pointer active:scale-[0.98] transition-transform">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF0FB] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF0FB] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)]">
               <FileUp className="w-4 h-4" />
             </span>
             <span className="text-xs font-bold text-stone-700 dark:text-stone-200">Import</span>
@@ -246,7 +246,7 @@ export default function HomeView({ onCreateNote, onBrowse }: HomeViewProps) {
             onClick={() => setCommandPaletteOpen(true)}
             className="flex items-center gap-2.5 rounded-2xl border border-stone-200/70 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] px-3.5 py-3.5 text-start active:scale-[0.98] transition-transform"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF0FB] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF0FB] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)]">
               <Search className="w-4 h-4" />
             </span>
             <span className="text-xs font-bold text-stone-700 dark:text-stone-200">Search</span>
@@ -257,7 +257,7 @@ export default function HomeView({ onCreateNote, onBrowse }: HomeViewProps) {
             onClick={() => onBrowse('folders')}
             className="flex items-center gap-2.5 rounded-2xl border border-stone-200/70 dark:border-[#2E3039] bg-white dark:bg-[#1A1B1E] px-3.5 py-3.5 text-start active:scale-[0.98] transition-transform"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF0FB] dark:bg-[#222328] text-[#1D2EA0] dark:text-[#A3B5F5]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF0FB] dark:bg-[#222328] text-[var(--accent)] dark:text-[var(--accent-dark)]">
               <Folder className="w-4 h-4" />
             </span>
             <span className="text-xs font-bold text-stone-700 dark:text-stone-200">Folders</span>
@@ -292,7 +292,7 @@ export default function HomeView({ onCreateNote, onBrowse }: HomeViewProps) {
               <button
                 type="button"
                 onClick={() => onBrowse('all')}
-                className="text-[10px] font-bold text-[#1D2EA0] dark:text-[#A3B5F5]"
+                className="text-[10px] font-bold text-[var(--accent)] dark:text-[var(--accent-dark)]"
               >
                 See all
               </button>

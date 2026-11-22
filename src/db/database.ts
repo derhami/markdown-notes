@@ -54,6 +54,7 @@ export const db = new MarkdownNotesDatabase();
 // Default values
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
+  accentPreset: 'indigo',
   language: 'en', // English-only UI is standard
   editorFontSize: 15,
   editorLineHeight: '1.6',

@@ -171,7 +171,7 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
           <input
             type="checkbox"
             checked={props.checked}
-            className="w-4 h-4 rounded text-[#1D2EA0] focus:ring-[#1D2EA0] border-stone-300 dark:border-stone-800 bg-white dark:bg-[#1A1B1E] cursor-pointer transition-colors shrink-0 mt-1"
+            className="w-4 h-4 rounded text-[var(--accent)] focus:ring-[var(--accent)] border-stone-300 dark:border-stone-800 bg-white dark:bg-[#1A1B1E] cursor-pointer transition-colors shrink-0 mt-1"
             onChange={(e) => {
               const taskCheckboxes = document.querySelectorAll('.markdown-body input[type="checkbox"]');
               const idx = Array.from(taskCheckboxes).indexOf(e.target as HTMLInputElement);
@@ -322,7 +322,7 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
               event.preventDefault();
               onOpenNote?.(linkedTitle);
             }}
-            className="text-[#1D2EA0] dark:text-[#A3B5F5] underline decoration-dotted underline-offset-2 hover:decoration-solid cursor-pointer"
+            className="text-[var(--accent)] dark:text-[var(--accent-dark)] underline decoration-dotted underline-offset-2 hover:decoration-solid cursor-pointer"
           >
             {children}
           </a>
@@ -333,7 +333,7 @@ export default function MarkdownPreview({ content, onContentChange, onOpenNote }
           href={href}
           target="_blank"
           rel="noreferrer noopener"
-          className="text-[#1D2EA0] dark:text-[#A3B5F5] underline decoration-dotted underline-offset-2 hover:decoration-solid"
+          className="text-[var(--accent)] dark:text-[var(--accent-dark)] underline decoration-dotted underline-offset-2 hover:decoration-solid"
           {...props}
         >
           {children}
