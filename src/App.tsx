@@ -21,6 +21,7 @@ import {
 import { generateId } from './utils/id';
 import { withoutVaultSettings } from './utils/backup';
 import { useSyncStore } from './stores/useSyncStore';
+import UpdatePrompt from './components/UpdatePrompt';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -809,6 +810,9 @@ export default function App() {
 
       {/* Global System toast notifications bar */}
       <ToastContainer />
+
+      {/* PWA update prompt */}
+      <UpdatePrompt />
     </div>
   );
 }

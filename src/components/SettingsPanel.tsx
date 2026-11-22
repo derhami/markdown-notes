@@ -727,6 +727,12 @@ export default function SettingsPanel() {
         </button>
       </div>
 
+      {/* App version */}
+      <div className="flex items-center justify-between border-t border-stone-100 dark:border-[#2E3039] pt-4">
+        <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">App version</span>
+        <span className="text-xs font-mono text-stone-500 dark:text-stone-400">{__APP_VERSION__}</span>
+      </div>
+
       {/* Core metrics grid */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3 border-t border-stone-100 dark:border-[#2E3039] pt-4">
         {[
